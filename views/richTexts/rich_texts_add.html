@@ -1,0 +1,24 @@
+<main>
+  @{view('~richTexts/partials/rich_texts_form+buttons')}
+  <script>
+    function handleSubmit(action) {
+      http.post(
+        '/rich-texts/insert',
+        {
+          content: quill.getContents(),
+        },
+        async (data) => {
+          if (action === 'save') {
+            await handleSuccess(data, true);
+            window.location.replace(`/rich-texts/edit/${data.id}`);
+          }
+          else if (action === 'saveAndClose') {
+            await handleSuccess(data, true);
+            window.location.replace('/rich-texts');
+          };
+        },
+        (error) => handleError(error, true),
+      );
+    };
+  </script>
+</main>

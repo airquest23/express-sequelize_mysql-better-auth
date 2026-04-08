@@ -1,0 +1,78 @@
+@{import('form.css')}
+
+<main class="form-centered w-100 m-auto">
+  <form id="form" class="needs-validation" novalidate>
+    <h4 class="h4 mb-4 fw-normal">@(#login)</h4>
+    @{component({
+      _path: '~auth/components/auth_input_email',
+      label: "@(#email)",
+      id: 'email',
+      name: 'email',
+      errorMessage: "@(#errorEmail)",
+      class: 'form-control first',
+    })}
+    @{component({
+      _path: '~auth/components/auth_input_password',
+      label: "@(#password)",
+      id: 'password',
+      name: 'password',
+      errorMessage: "@(#errorPassword)",
+      class: 'form-control last',
+    })}
+    @{component({
+      _path: '~auth/components/auth_input_check',
+      label: "@(#rememberMe)",
+      id: 'rememberMe',
+      name: 'rememberMe',
+    })}
+    @{view('~components/form_errors')}
+    <button class="btn btn-primary w-100 py-2" type="submit">@(#login)</button>
+    <p class="mt-5 fst-italic">
+      <a class="link-opacity-75" href="/password-forgot">@(#passwordForgot)</a>
+      @{component({
+        _path: '~svg/smiley_upside_down',
+        class: 'bi ms-2 opacity-75'
+      })}
+    </p>
+  </form>
+  <script>
+    document.getElementById('form')
+    .addEventListener('submit', function(e) {
+      const formData = getFormData(e);
+      if (!formData) return;
+      const checkbox = document.getElementById('rememberMe');
+      const rememberMe = checkbox?.checked ? true : false;
+      http.post(
+        '/api/auth/sign-in/email',
+        {
+          email: formData.get('email'),
+          password: formData.get('password'),
+          rememberMe: rememberMe,
+          callbackURL: '/login',
+        },
+        async (data) => {
+          await handleSuccess(data, true);
+          if (!data) return;
+          if (data.twoFactorRedirect) {
+            if (data.twoFactorEmailOnly) {
+              http.post(
+                '/api/auth/two-factor/send-otp',
+                { trustDevice: false },
+                (data) => window.location.replace('/otp-verify-email-only'),
+                (error) => handleError(error, true),
+              );
+            }
+            else window.location.replace('/otp-verify');
+          }
+          else window.location.reload();
+        },
+        async (error) => {
+          await handleError(error, true);
+          if (!error || !error.code) return;
+          if (error.code === 'EMAIL_NOT_VERIFIED')
+            window.location.replace('/email-verification');
+        },
+      );
+    });
+  </script>
+</main>

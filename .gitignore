@@ -1,0 +1,13 @@
+/.vscode
+/dist
+/logs
+/node_modules
+/logs
+/src/utils/server/_tests
+/src/utils/auth_modifs.txt
+/views/_tests
+/views/_test_layout.html
+.env
+.env.dev
+.env.prod
+package-lock.json

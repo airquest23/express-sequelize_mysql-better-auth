@@ -1,0 +1,285 @@
+<main>
+  <div class="pb-2 mb-3 border-bottom">
+    <h1 class="h2">@(#settings)</h1>
+  </div>
+  
+  <!---------------------------------->
+  <!--- ROW 1 (USER DETAILS FORM) ---->
+  <!---------------------------------->
+  <div class="pt-3 pb-2">
+    <form id="formUserDetails" class="needs-validation" novalidate>
+      <div class="card">
+        <div class="card-header">
+          @(#userDetails)
+        </div>
+        <div class="card-body">
+          @{component({
+            _path: '~components/input_text',
+            props: {
+              label: "@(#name)",
+              id: 'name',
+              name: 'name',
+              autocomplete: 'name',
+              minlength: '3',
+              maxlength: '40',
+              required: true,
+              errorMessage: "@(#errorName)",
+            },
+            model: {
+              value: "@{model.name}",
+            },
+          })}
+          @{view('~components/form_errors')}
+        </div>
+        <div class="card-footer text-center">
+          <button class="btn btn-success" type="submit">
+            <i class="bi bi-check2-circle me-2"></i>
+            @(#save2)
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('formUserDetails')
+    .addEventListener('submit', async function (e) {
+      const formData = getFormData(e);
+      if (!formData) return;
+      http.post(
+        '/api/auth/update-user',
+        { name: formData.get('name') },
+        (data) => handleSuccess(data, true),
+        (error) => handleError(error, true),
+      );
+    });
+  </script>
+
+  <!---------------------------------->
+  <!-------- ROW 2 (OTP FORM) -------->
+  <!---------------------------------->
+  <div class="pt-3 pb-2">
+    <form id="formOTPSettings" class="needs-validation" novalidate>
+      <div class="card">
+        <div class="card-header">
+          @(#userTwoFaTitle)
+        </div>
+
+        <div class="card-body">
+          <div class="form-check form-switch has-validation">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+              id="twoFactorEnabled"
+              name="twoFactorEnabled"
+              @{if model.twoFactorEnabled}
+                checked
+              @{endif}
+              @{if* props.forceEnableTwoFa}
+                disabled
+              @{endif*}
+            >
+            <label class="form-check-label" for="twoFactorEnabled">
+              @(#userTwoFaActivateSwitch)
+            </label>
+          </div>
+
+          @{if* props.forceEnableTwoFa}
+            <div class="invalid-feedback" style="display: block;">
+              @(#userTwoFaForcedWarning)
+            </div>
+          @{endif*}
+          
+          <hr/>
+          
+          <div class="form-check has-validation">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="twoFactorType"
+              id="twoFactorOTP"
+              value="twoFactorOTP"
+              @{if !model.twoFactorEmailOnly}
+                checked
+              @{endif}
+            >
+            <label class="form-check-label" for="twoFactorOTP">
+              @(#userTwoFaActivateOTP)
+              <i class="bi bi-phone-vibrate-fill ms-1"></i>
+            </label>
+          </div>
+
+          <div class="form-check has-validation">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="twoFactorType"
+              id="twoFactorEmail"
+              value="twoFactorEmail"
+              @{if model.twoFactorEmailOnly}
+                checked
+              @{endif}
+            >
+            <label class="form-check-label" for="twoFactorEmail">
+              @(#userTwoFaActivateEmail)
+              <i class="bi bi-envelope-arrow-up-fill ms-1"></i>
+            </label>
+          </div>
+          
+          @{if !model.twoFactorEmailOnly}
+            <hr/>
+            
+            <div class="my-3 text-danger text-center">
+              <p class="small">@(#backupCodes)</p>
+              <small
+                id="backupCodes"
+                data-data="@{model.backupCodes}">
+              </small>
+              <button
+                class="btn btn-sm btn-outline-secondary mt-3"
+                type="button"
+                onclick="window.location.href = '/user/otp-codes-generate'"
+              >
+                <i class="bi bi-check2-circle me-2"></i>
+                @(#otpCodesGenerateBtn)
+              </button>
+            </div>
+          @{endif}
+        </div>
+
+        <div class="card-footer text-center">
+          <button class="btn btn-success" type="submit">
+            <i class="bi bi-check2-circle me-2"></i>
+            @(#save2)
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    @{if !model.twoFactorEmailOnly && model.backupCodes}
+      try {
+        const backupCodesEl = document.getElementById('backupCodes');
+        const backupCodes = JSON.parse(backupCodesEl.dataset.data);
+        delete backupCodesEl.dataset.data;
+        backupCodesEl.removeAttribute('data-data');
+        let innerHTML = ``;
+        for (let i = 0; i < backupCodes.length; i ++) {
+          innerHTML += `<div class="col">${backupCodes[i]}</div>`;
+        };
+        backupCodesEl.innerHTML = innerHTML;
+      } catch(e) {
+        handleError("@(#errorBackupCodes)", true);
+      };
+    @{endif}
+    
+    const form = document.getElementById('formOTPSettings');
+    form.addEventListener('submit', async function (e) {
+      const formData = getFormData(e);
+      if (!formData) return;
+
+      const twoFactorEnabledSwitch = document.getElementById('twoFactorEnabled');
+      const twoFactorEnabled = twoFactorEnabledSwitch?.checked ? true : false;
+      const twoFactorOTPRadio = document.getElementById('twoFactorOTP');
+      const twoFactorOTP = twoFactorOTPRadio?.checked ? true : false;
+      const twoFactorEmailRadio = document.getElementById('twoFactorEmail');
+      const twoFactorEmail = twoFactorEmailRadio?.checked ? true : false;
+
+      http.post(
+        '/user/update-twofa',
+        {
+          twoFactorEnabled: twoFactorEnabled,
+          twoFactorOTP: twoFactorOTP,
+          twoFactorEmail: twoFactorEmail
+        },
+        async (data) => {
+          await handleSuccess(data, true);
+          form.classList.remove('was-validated');
+          form.reset();
+          if (data.redirect)
+            window.location.href = data.redirect;
+        },
+        (error) => handleError(error, true),
+      );
+    });
+  </script>
+
+  <!---------------------------------->
+  <!-- ROW 3 (PASSWORD UPDATE FORM) -->
+  <!---------------------------------->
+  <div class="pt-3 pb-2">
+    <div class="card">
+      <div class="card-header">
+        @(#passwordChangeTitle)
+      </div>
+      <div class="card-body">
+        @(#passwordChangeText)
+      </div>
+      <div class="card-footer text-center">
+        <button
+          class="btn btn-danger"
+          type="button"
+          onclick="sendResetPasswordMail()"
+        >
+          @(#modify)
+          <i class="bi bi-envelope-arrow-up-fill ms-2"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function sendResetPasswordMail() {
+      swalConfirm(
+        "@(#passwordChangeTitle)",
+        () => http.post(
+          '/api/auth/request-password-reset',
+          {
+            email: "@{model.email}",
+            redirectTo: "/password-reset",
+          },
+          (data) => handleSuccess("@(#passwordChangeConfirmation)", true),
+          (error) => handleError(error, true),
+        ),
+      );
+    };
+  </script>
+
+  <!---------------------------------->
+  <!---- ROW 4 (EMAIL CHANGE FORM) --->
+  <!---------------------------------->
+  <div class="pt-3 pb-2">
+    <div class="card">
+      <div class="card-header">
+        @(#emailChangeTitle)
+      </div>
+      <div class="card-body">
+        @(#emailChangeText)
+      </div>
+      <div class="card-footer text-center">
+        <button
+          class="btn btn-danger"
+          type="button"
+          onclick="changeEmail()"
+        >
+          @(#modify)
+          @{component({
+            _path: '~svg/go_forward',
+            class: 'bi ms-2 opacity-75'
+          })}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function changeEmail() {
+      swalConfirm(
+        "@(#emailChangeTitle)",
+        () => window.location.href = '/email-reset',
+      );
+    };
+  </script>
+</main>

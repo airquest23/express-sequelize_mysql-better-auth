@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-100" data-bs-theme="auto">
+	@{view('~partials/app_head')}
+  @{import('dashboard.css')}
+  <body class="h-100">
+    @{view('~partials/dashboard_header')}
+    <div class="container-fluid h-100">
+      <div class="row h-100 main-row">
+        @{view('~partials/dashboard_sidebar')}
+        @{body}
+      </div>
+    </div>
+  </body>
+  @{view('~partials/toggle_color_modes')}
+</html>

@@ -1,0 +1,95 @@
+@{import('quill@2.0.3/quill.js')}
+@{import('quill@2.0.3/quill.snow.css')}
+
+<!-- ROW (TITLE / HEADER) -->
+<div class="pb-2 mb-3 border-bottom">
+  <h1 class="h2">
+    @{if* props.isEdit}
+      @(#editLabel) @(#textNoCap)
+    @{else*}
+      @(#new) @(#textNoCap)
+    @{endif*}
+  </h1>
+</div>
+
+<!-- ROW (BACK BUTTON) -->
+<div class="d-flex justify-content-start flex-wrap flex-md-nowrap align-items-center pt-3 pb-2">
+  <a href="/rich-texts" class="btn btn-danger" role="button">
+    <div class="d-flex align-items-stretch">
+      <i class="bi bi-backspace-fill me-2"></i>
+      @(#back)
+    </div>
+  </a>
+</div>
+
+<!-- ROW (FORM) -->
+<div class="pt-3 pb-2">
+  <!--<form id="form">-->
+    <div id="save-status" class="mb-2 me-3 text-end fst-italic" style="font-size: 0.7rem;"></div>
+    <div
+      class="mb-3 quillEditor"
+      id="quill"
+      data-data="@{model.content}"
+    ></div>
+
+    @{view('~components/form_errors')}
+    
+    <script>
+      const TOOLBAR_OPTIONS = [
+        [{ header: [1, 2, 3, 4, 5, 6, false] }],
+        [{ font: [] }],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['bold', 'italic', 'underline'],
+        [{ color: [] }, { background: [] }],
+        [{ script: 'sub' }, { script: 'super' }],
+        [{ align: [] }],
+        ['image', 'blockquote', 'code-block'],
+        ['clean'],
+      ];
+      const editor = DOM('quill').html('').appendNew('div').node;
+      Quill.debug('warn');
+      const quill = new Quill(editor, {
+        theme: 'snow',
+        modules: { toolbar: TOOLBAR_OPTIONS },
+      });
+      @{if* props.isEdit}
+        if (quill) {
+          const wrapper = document.getElementById("quill");
+          const data = JSON.parse(wrapper.dataset.data);
+          delete wrapper.dataset.data;
+          wrapper.removeAttribute('data-data');
+          quill.setContents(data);
+        };
+      @{endif*}
+    </script>
+
+    <div class="d-flex justify-content-between">
+      <button
+        type="button"
+        class="btn btn-success w-100 me-2"
+        onclick="handleSubmit('save')"
+      >
+        <i class="bi bi-check2-circle me-2"></i>
+        @(#save)
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-primary w-100 mx-2"
+        onclick="handleSubmit('saveAndClose')"
+      >
+        <i class="bi bi-floppy2-fill me-2"></i>
+        @(#saveAndClose)
+      </button>
+      
+      <button
+        type="button"
+        class="btn btn-danger w-100 ms-2"
+        onclick="window.location.replace('/rich-texts')"
+      >
+        <i class="bi bi-x-octagon-fill me-2"></i>
+        @(#close)
+      </button>
+    </div>
+  <!--</form>-->
+</div>

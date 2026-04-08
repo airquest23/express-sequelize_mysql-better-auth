@@ -1,0 +1,57 @@
+<main>
+  @{view('~richTexts/partials/rich_texts_form+buttons')}
+  <script>
+    function handleSubmit(action) {
+      http.put(
+        '/rich-texts/update/@{model.id}',
+        {
+          content: quill.getContents(),
+        },
+        async (data) => {
+          if (action === 'save')
+            handleSuccess(data, true);
+          else if (action === 'saveAndClose') {
+            await handleSuccess(data, true);
+            window.location.replace('/rich-texts');
+          };
+        },
+        (error) => handleError(error, true),
+      );
+    };
+    
+    let saveTimeout;
+    const statusEl = document.getElementById('save-status');
+
+    quill.on('text-change', (delta, oldDelta, source) => {
+      if (source !== 'user') return;
+      
+      statusEl.innerText = 'Typing...';
+
+      clearTimeout(saveTimeout);
+
+      saveTimeout = setTimeout(async () => {
+        statusEl.innerText = 'Saving...';
+
+        try {
+          http.put(
+            '/rich-texts/auto-save/@{model.id}',
+            {
+              content: quill.getContents(),
+            },
+            (data) => {
+              statusEl.innerText = 'Saved!';  
+            },
+            (error) => {
+              statusEl.innerText = 'Error saving!';
+              handleError(error, true);
+            },
+          );
+        }
+        catch(e) {
+          console.error(e);
+          statusEl.innerText = 'Offline - Changes not saved!';
+        };
+      }, 2000);
+    });
+  </script>
+</main>

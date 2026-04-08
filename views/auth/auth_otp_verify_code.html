@@ -1,0 +1,59 @@
+@{import('form.css')}
+
+<main class="form-centered w-100 m-auto">
+  <form id="form" class="needs-validation" novalidate>
+    <h4 class="h4 mb-4 fw-normal">@(#otpCodeVerify)</h4>
+    <div class="form-floating has-validation">
+      <input
+        type="text"
+        class="form-control unique"
+        autocomplete="off"
+        placeholder="1a2b3-c4d5e"
+        id="code"
+        name="code"
+        minlength="11"
+        maxlength="11"
+        required
+      />
+      <label for="code" class="fst-italic">@(#otpCode)</label>
+      <div class="invalid-feedback fst-italic pb-2">@(#errorOtpCode)</div>
+    </div>
+    @{component({
+      _path: '~auth/components/auth_input_check',
+      label: "@(#trustDevice)",
+      id: 'trustDevice',
+      name: 'trustDevice',
+    })}
+    @{view('~components/form_errors')}
+    <button class="btn btn-primary w-100 py-2" type="submit">@(#verify)</button>
+    <p class="mt-5 fst-italic">
+      @{component({
+        _path: '~svg/go_back',
+        class: 'bi ms-2 opacity-75'
+      })}
+      <a class="link-opacity-75" href="/login">@(#backLogin)</a>
+    </p>
+  </form>
+  <script>
+    document.getElementById('form')
+    .addEventListener('submit', function(e) {
+      const formData = getFormData(e);
+      if (!formData) return;
+      const checkbox = document.getElementById('trustDevice');
+      const trustDevice = checkbox?.checked ? true : false;
+      http.post(
+        '/api/auth/two-factor/verify-backup-code',
+        {
+          code: formData.get('code'),
+          trustDevice: trustDevice,
+          disableSession: false,
+        },
+        async (data) => {
+          await handleSuccess(data, true);
+          window.location.replace('/');
+        },
+        (error) => handleError(error, true),
+      );
+    });
+  </script>
+</main>

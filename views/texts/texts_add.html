@@ -1,0 +1,29 @@
+<main>
+  @{view('~texts/partials/texts_form+buttons')}
+  <script>
+    document.getElementById('form')
+    .addEventListener('submit', function(e) {
+      const formData = getFormData(e);
+      if (!formData) return;
+      const button = e.submitter;
+      const action = button.dataset.action;
+      http.post(
+        '/texts/insert',
+        {
+          content: formData.get('content'),
+        },
+        async (data) => {
+          if (action === 'save') {
+            await handleSuccess(data, true);
+            window.location.replace(`/texts/edit/${data.id}`);
+          }
+          else if (action === 'saveAndClose') {
+            await handleSuccess(data, true);
+            window.location.replace('/texts');
+          };
+        },
+        (error) => handleError(error, true),
+      );
+    });
+  </script>
+</main>

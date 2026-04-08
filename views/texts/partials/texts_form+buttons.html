@@ -1,0 +1,70 @@
+<!-- ROW (TITLE / HEADER) -->
+<div class="pb-2 mb-3 border-bottom">
+  <h1 class="h2">
+    @{if* props.isEdit}
+      @(#editLabel) @(#textNoCap)
+    @{else*}
+      @(#new) @(#textNoCap)
+    @{endif*}
+  </h1>
+</div>
+
+<!-- ROW (BACK BUTTON) -->
+<div class="d-flex justify-content-start flex-wrap flex-md-nowrap align-items-center pt-3 pb-2">
+  <a href="/texts" class="btn btn-danger" role="button">
+    <div class="d-flex align-items-stretch">
+      <i class="bi bi-backspace-fill me-2"></i>
+      @(#back)
+    </div>
+  </a>
+</div>
+
+<!-- ROW (FORM) -->
+<div class="pt-3 pb-2">
+  <form id="form">
+    <div id="save-status" class="mb-2 me-3 text-end fst-italic" style="font-size: 0.7rem;"></div>
+    <div class="mb-3">
+      <label for="content" class="form-label">
+        @(#text)
+      </label>
+      <textarea
+        type="text"
+        class="form-control"
+        id="content"
+        name="content"
+        style="min-height: 300px;"
+      >@{if* props.isEdit}@{model.content}@{endif*}</textarea>
+    </div>
+
+    @{view('~components/form_errors')}
+
+    <div class="d-flex justify-content-between">
+      <button
+        type="submit"
+        class="btn btn-success w-100 me-2"
+        data-action="save"
+      >
+        <i class="bi bi-check2-circle me-2"></i>
+        @(#save)
+      </button>
+
+      <button
+        type="submit"
+        class="btn btn-primary w-100 mx-2"
+        data-action="saveAndClose"
+      >
+        <i class="bi bi-floppy2-fill me-2"></i>
+        @(#saveAndClose)
+      </button>
+      
+      <button
+        type="button"
+        class="btn btn-danger w-100 ms-2"
+        onclick="window.location.replace('/texts')"
+      >
+        <i class="bi bi-x-octagon-fill me-2"></i>
+        @(#close)
+      </button>
+    </div>
+  </form>
+</div>

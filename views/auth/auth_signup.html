@@ -1,0 +1,51 @@
+@{import('form.css')}
+
+<main class="form-centered w-100 m-auto">
+  <form id="form" class="needs-validation" novalidate>
+    <h4 class="h4 mb-4 fw-normal">@(#signUp)</h4>
+    @{component({
+      _path: '~auth/components/auth_input_name',
+      disabled: false,
+      class: 'form-control first',
+    })}
+    @{component({
+      _path: '~auth/components/auth_input_email',
+      label: "@(#email)",
+      id: 'email',
+      name: 'email',
+      errorMessage: "@(#errorEmail)",
+      class: 'form-control',
+    })}
+    @{component({
+      _path: '~auth/components/auth_input_password',
+      label: "@(#password)",
+      id: 'password',
+      name: 'password',
+      errorMessage: "@(#errorPassword)",
+      class: 'form-control last',
+    })}
+    @{view('~components/form_errors')}
+    <button class="btn btn-primary w-100 py-2" type="submit">@(#subscribe)</button>
+  </form>
+  <script>
+    document.getElementById('form')
+    .addEventListener('submit', function(e) {
+      const formData = getFormData(e);
+      if (!formData) return;
+      http.post(
+        '/api/auth/sign-up/email',
+        {
+          name: formData.get('name'),
+          email: formData.get('email'),
+          password: formData.get('password'),
+          callbackURL: '/email-verified',
+        },
+        async (data) => {
+          await handleSuccess(data, true);
+          window.location.replace('/email-verification');
+        },
+        (error) => handleError(error, true),
+      );
+    });
+  </script>
+</main>

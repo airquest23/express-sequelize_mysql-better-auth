@@ -1,0 +1,38 @@
+.form-centered {
+  max-width: 330px;
+  padding: 1rem;
+}
+
+.form-centered {
+  max-width: 330px;
+  padding: 1rem;
+}
+
+.form-centered .form-floating:focus-within {
+  z-index: 2;
+}
+
+.form-centered input {
+  border-radius: 0;
+  margin-bottom: -1px;
+}
+
+.form-centered input.first {
+  border-top-left-radius: var(--bs-border-radius);
+  border-top-right-radius: var(--bs-border-radius);
+  margin-bottom: -1px;
+}
+
+.form-centered input.last {
+  border-bottom-left-radius: var(--bs-border-radius);
+  border-bottom-right-radius: var(--bs-border-radius);
+  margin-bottom: 10px !important;
+}
+
+.form-centered input.unique {
+  border-top-left-radius: var(--bs-border-radius);
+  border-top-right-radius: var(--bs-border-radius);
+  border-bottom-left-radius: var(--bs-border-radius);
+  border-bottom-right-radius: var(--bs-border-radius);
+  margin-bottom: 10px !important;
+}

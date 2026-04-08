@@ -1,0 +1,29 @@
+<footer class="mt-auto">
+  <p class="text-secondary">
+    <a href="https://airquest-datacenter.ch/" class="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover fst-italic">
+      airquest-datacenter
+    </a>, by <a href="https://airquest-datacenter.ch/" class="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover fst-italic">
+      @airquest
+    </a> &copy; 2017–2025.
+  </p>
+  <p>
+    <a href="/?language=en" id="langLinkEn"><span class="badge text-bg-secondary">en</span></a>
+    <a href="/?language=fr" id="langLinkFr"><span class="badge text-bg-secondary">fr</span></a>
+  </p>
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      try {
+        const linkFr = document.getElementById('langLinkFr');
+        const linkEn = document.getElementById('langLinkEn');
+        if (!linkFr || !linkEn) {
+          console.error("Link element not found.");
+          return;
+        };
+        linkFr.setAttribute('href', window.location.pathname + '?language=fr');
+        linkEn.setAttribute('href', window.location.pathname + '?language=en');
+      } catch (error) {
+        console.error("Error setting href:", error);
+      };
+    });
+  </script>
+</footer>

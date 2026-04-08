@@ -1,0 +1,55 @@
+<header class="mb-auto">
+  <div>
+    <h3 class="float-md-start mb-0">@(#appName)</h3>
+    <nav class="nav nav-masthead justify-content-center float-md-end">
+      <a
+        @{if* props.currentPage === 'home'}
+          class="nav-link fw-bold py-1 px-0 active"
+          aria-current="page"
+        @{else*}
+          class="nav-link fw-bold py-1 px-0"
+        @{endif*}
+        href="/"
+      >
+        @(#home)
+      </a>
+      
+      @{if !model.hideLogin}
+        <a
+          @{if* props.currentPage === 'login'}
+            class="nav-link fw-bold py-1 px-0 active"
+            aria-current="page"
+          @{else*}
+            class="nav-link fw-bold py-1 px-0"
+          @{endif*}
+          href="/login"
+        >
+          @(#login)
+        </a>
+      @{endif}
+      
+      @{if* !props.hideSignup}
+        <a
+          @{if* props.currentPage === 'signup'}
+            class="nav-link fw-bold py-1 px-0 active"
+            aria-current="page"
+          @{else*}
+            class="nav-link fw-bold py-1 px-0"
+          @{endif*}
+          href="/signup"
+        >
+          @(#signUp)
+        </a>
+      @{endif*}
+      
+      @{if props.hideSignup && model.showSignout}
+        <a
+          class="nav-link fw-bold py-1 px-0"
+          href="/signout"
+        >
+          @(#signOut)
+        </a>
+      @{endif}
+    </nav>
+  </div>
+</header>

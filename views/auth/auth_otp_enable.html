@@ -1,0 +1,63 @@
+@{import('form.css')}
+
+<main class="form-centered w-100 m-auto">
+  <form id="form" class="needs-validation" novalidate>
+    @{if* props.isAuth}
+      <h4 class="h4 mb-4 fw-normal">@(#otpSwitchToEnable)</h4>
+    @{else*}
+      <h4 class="h4 mb-4 fw-normal">@(#otpEnable)</h4>
+    @{endif*}
+    @{component({
+      _path: '~auth/components/auth_input_name',
+      disabled: true,
+      class: 'form-control unique',
+    })}
+    @{component({
+      _path: '~auth/components/auth_input_password',
+      label: "@(#password)",
+      id: 'password',
+      name: 'password',
+      errorMessage: "@(#errorPassword)",
+      class: 'form-control unique',
+    })}
+    @{view('~components/form_errors')}
+    <button class="btn btn-primary w-100 py-2" type="submit">@(#activate)</button>
+    @{if* !props.isAuth}
+      <p class="mt-5 fst-italic">
+        <a class="link-opacity-75" href="/otp-enable-email">@(#switchOtpToEmailOnly)</a>
+        <i class="bi bi-envelope-arrow-up-fill ms-2"></i>
+      </p>
+    @{endif*}
+    <p class="mt-5 fst-italic">
+      <a class="link-opacity-75" href="/password-forgot">@(#passwordForgot)</a>
+      @{component({
+        _path: '~svg/smiley_upside_down',
+        class: 'bi ms-2 opacity-75'
+      })}
+    </p>
+  </form>
+  <script>
+    document.getElementById('form')
+    .addEventListener('submit', function(e) {
+      const formData = getFormData(e);
+      if (!formData) return;
+      http.post(
+        '/api/auth/two-factor/enable',
+        {
+          password: formData.get('password'),
+          issuer: "@{props.issuer}"
+        },
+        (data) => {
+          if (!data.totpURI) {
+            handleError("@(#errorResponse)", true);
+            return;
+          };
+          localStorage.setItem('totpURI', data.totpURI);
+          localStorage.setItem('backupCodes', data.backupCodes);
+          window.location.href = '/otp-enable-verify';
+        },
+        (error) => handleError(error, true),
+      );
+    });
+  </script>
+</main>

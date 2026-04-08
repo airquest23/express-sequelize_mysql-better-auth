@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-100" data-bs-theme="auto">
+	@{view('~partials/app_head')}
+  @{import('cover.css')}
+  <body class="d-flex h-100 text-center">
+    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+      @{view('~partials/cover_header')}
+      @{body}
+      @{view('~partials/cover_footer')}
+    </div>
+  </body>
+  @{view('~partials/toggle_color_modes')}
+</html>

@@ -1,0 +1,47 @@
+@{import('form.css')}
+
+<main class="form-centered w-100 m-auto">
+  <form id="form" class="needs-validation" novalidate>
+    <h4 class="h4 mb-4 fw-normal">@(#otpCodesGenerate)</h4>
+    @{component({
+      _path: '~auth/components/auth_input_name',
+      disabled: true,
+      class: 'form-control unique',
+    })}
+    @{component({
+      _path: '~auth/components/auth_input_password',
+      label: "@(#password)",
+      id: 'password',
+      name: 'password',
+      errorMessage: "@(#errorPassword)",
+      class: 'form-control unique',
+    })}
+    @{view('~components/form_errors')}
+    <button class="btn btn-primary w-100 py-2" type="submit">@(#generate)</button>
+    <p class="mt-5 fst-italic">
+      <a class="link-opacity-75" href="/password-forgot">@(#passwordForgot)</a>
+      @{component({
+        _path: '~svg/smiley_upside_down',
+        class: 'bi ms-2 opacity-75'
+      })}
+    </p>
+  </form>
+  <script>
+    document.getElementById('form')
+    .addEventListener('submit', function(e) {
+      const formData = getFormData(e);
+      if (!formData) return;
+      http.post(
+        '/api/auth/two-factor/generate-backup-codes',
+        {
+          password: formData.get('password'),
+        },
+        async (data) => {
+          await handleSuccess(data, true);
+          window.location.href = '/user';
+        },
+        (error) => handleError(error, true),
+      );
+    });
+  </script>
+</main>

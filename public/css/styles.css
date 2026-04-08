@@ -1,0 +1,23 @@
+html, body {
+  height: 100%;
+}
+
+[data-bs-theme="dark"] .theme-light-only {
+  display: none;
+}
+
+[data-bs-theme="light"] .theme-dark-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-only {
+    display: none !important;
+  }
+}

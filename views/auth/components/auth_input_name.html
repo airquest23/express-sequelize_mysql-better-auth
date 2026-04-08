@@ -1,0 +1,20 @@
+<div
+  @{if* props.disabled}
+    class="form-floating has-validation d-none"
+  @{else*}
+    class="form-floating has-validation"
+  @{endif*}
+>
+  <input
+    type="text"
+    class="@{props.class}"
+    autocomplete="name"
+    id="name"
+    name="name"
+    @{if* props.disabled}
+      disabled
+    @{endif*}
+  />
+  <label for="name" class="fst-italic">@(#name)</label>
+  <div class="invalid-feedback fst-italic pb-2">@(#errorName)</div>
+</div>

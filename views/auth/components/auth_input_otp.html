@@ -1,0 +1,15 @@
+<div class="form-floating has-validation">
+  <input
+    type="number"
+    class="@{props.class}"
+    autocomplete="off"
+    placeholder="123456"
+    id="otp"
+    name="otp"
+    minlength="6"
+    maxlength="6"
+    required
+  />
+  <label for="otp" class="fst-italic">@(#otp)</label>
+  <div class="invalid-feedback fst-italic pb-2">@(#errorOtp)</div>
+</div>

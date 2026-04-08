@@ -1,0 +1,78 @@
+@{import('form.css')}
+
+<main class="form-centered w-100 m-auto">
+  <form id="form" class="needs-validation" novalidate>
+    <h4 class="h4 mb-4 fw-normal">@(#otpVerify)</h4>
+    @{component({
+      _path: '~auth/components/auth_input_otp',
+      class: "form-control unique",
+    })}
+    @{component({
+      _path: '~auth/components/auth_input_check',
+      label: "@(#trustDevice)",
+      id: 'trustDevice',
+      name: 'trustDevice',
+    })}
+    @{view('~components/form_errors')}
+    <button class="btn btn-primary w-100 py-2" type="submit">@(#verify)</button>
+    <p class="mt-5 fst-italic">
+      <a
+        role="button"
+        class="link-opacity-75"
+        onclick="sendEmail()"
+      >@(#otpSendMeEmail)</a>
+      <i class="bi bi-envelope-arrow-up-fill ms-2"></i>
+    </p>
+    <p class="mt-5 fst-italic">
+      <a class="link-opacity-75" href="/otp-verify-code">@(#otpCodesUse)</a>
+      <i class="bi bi-journal-code"></i>
+      @{component({
+        _path: '~svg/go_forward',
+        class: 'bi ms-2 opacity-75'
+      })}
+    </p>
+    <p class="mt-5 fst-italic">
+      @{component({
+        _path: '~svg/go_back',
+        class: 'bi ms-2 opacity-75'
+      })}
+      <a class="link-opacity-75" href="/login">@(#backLogin)</a>
+    </p>
+  </form>
+  <script>
+    function sendEmail() {
+      const checkbox = document.getElementById('trustDevice');
+      const trustDevice = checkbox?.checked ? true : false;
+      http.post(
+        '/api/auth/two-factor/send-otp',
+        {
+          trustDevice: trustDevice,
+        },
+        async (data) => {
+          await handleSuccess(data, true);
+          window.location.replace('/otp-verify-email');
+        },
+        (error) => handleError(error, true),
+      );
+    };
+    document.getElementById('form')
+    .addEventListener('submit', function(e) {
+      const formData = getFormData(e);
+      if (!formData) return;
+      const checkbox = document.getElementById('trustDevice');
+      const trustDevice = checkbox?.checked ? true : false;
+      http.post(
+        '/api/auth/two-factor/verify-totp',
+        {
+          code: formData.get('otp'),
+          trustDevice: trustDevice,
+        },
+        async (data) => {
+          await handleSuccess(data, true);
+          window.location.replace('/');
+        },
+        (error) => handleError(error, true),
+      );
+    });
+  </script>
+</main>

@@ -1,0 +1,14 @@
+<div class="form-floating has-validation">
+  <input
+    type="email"
+    class="@{props.class}"
+    autocomplete="current-email"
+    id="@{props.id}"
+    name="@{props.name}"
+    minlength="3"
+    maxlength="40"
+    required
+  />
+  <label for="@{props.id}" class="fst-italic">@{props.label}</label>
+  <div class="invalid-feedback fst-italic pb-2">@{props.errorMessage}</div>
+</div>

@@ -1,0 +1,477 @@
+@{import('grid.css')}
+@{import('grid.js')}
+
+<main>
+  <!-- ROW (HEADER / TITLE / BUTTONS) -->
+  <div class="pb-2 mb-3 border-bottom d-flex justify-content-between">
+    <h2 class="h2">
+      @(#texts)
+    </h2>
+
+    <div class="ms-auto mb-3 d-flex align-items-center">
+      <button
+        type="button"  
+        class="btn btn-outline-secondary me-2 disabled"
+        aria-label="@(#gridView)"
+        id="gridMode"
+        disabled
+      ><i class="bi bi-table"></i></button>
+
+      <button
+        type="button"  
+        class="btn btn-outline-secondary"
+        aria-label="@(#listView)"
+        id="listMode"
+      ><i class="bi bi-grid-fill"></i></button>
+    </div>
+  </div>
+
+  <!-- ROW (TABLE BUTTONS) -->
+  <div class="d-flex justify-content-start flex-wrap flex-md-nowrap align-items-center gap-1 pt-3 pb-2">
+    <a
+      role="button"
+      class="btn btn-success"
+      aria-label="@(#new)"
+      href="/texts/new"
+    >
+      <div class="d-flex align-items-stretch">
+        <i class="bi bi-plus-circle me-2"></i>
+        @(#new)
+      </div>
+    </a>
+
+    <button
+      type="button"  
+      class="btn btn-secondary"
+      aria-label="@(#edit)"
+      onclick="editObject()"
+    >
+      <div class="d-flex align-items-stretch">
+        <i class="bi bi-pencil me-2"></i>
+        @(#edit)
+      </div>
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-danger"
+      aria-label="@(#delete)"
+      onclick="deleteObjects()"
+    >
+      <div class="d-flex align-items-stretch">
+        <i class="bi bi-trash me-2"></i>
+        @(#delete)
+      </div>
+    </button>
+  </div>
+
+  <!--------------------------------------->
+  <!-- TABLE HEADER (SEARCH AND BUTTONS) -->
+  <!--------------------------------------->
+  <div class="d-flex align-items-center justify-content-between mt-3">
+    <!-- SEARCH -->
+    <div class="flex-grow-1 d-flex align-items-center">
+      <!-- SEARCH INPUT -->
+      <input
+        type="text"
+        class="form-control"
+        id="gridSearch"
+        placeholder="@(#search)..."
+      />
+      <!-- CANCEL SEARCH BUTTON -->
+      <button
+        type="button"
+        class="btn btn-sm btn-close ms-2"
+        id="cancelSearch"
+        aria-label="@(#cancel)"
+      ></button>
+    </div>
+    
+    <!-- BUTTONS LIST -->
+    <div class="flex-shrink-1 d-flex align-items-center ms-2">
+      <!-- SORT LISTVIEW -->
+      <div class="dropdown">
+        <button
+          type="button"
+          class="btn btn-sm dropdown-toggle"
+          data-bs-toggle="dropdown"
+          data-bs-auto-close="outside"
+          aria-expanded="false"
+          aria-label="@(#sort)"
+        >
+          <div class="rotate-180">
+            <i class="bi bi-filter"></i>
+          </div>
+        </button>
+        <ul class="dropdown-menu" id="sortListView"></ul>
+      </div>
+
+      <!-- HIDE -->
+      <div class="dropdown">
+        <button
+          type="button"
+          class="btn btn-sm dropdown-toggle ms-1"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          aria-label="@(#hide)"
+        ><i class="bi bi-eye-slash"></i></button>
+        <ul class="dropdown-menu" id="hideDD"></ul>
+      </div>
+
+      <!-- RESIZE COLUMNS -->
+      <div id="resizeButton">
+        <button
+          type="button"
+          class="btn btn-sm ms-1"
+          data-bs-toggle="modal"
+          data-bs-target="#resizeModal"
+          aria-label="@(#resizeCols)"
+        ><i class="bi bi-arrows"></i></button>
+        
+        <!-- Modal -->
+        @{component({
+          _path: '~components/modal_dialog',
+          id: 'resizeModal',
+          labelId: 'resizeModalLabel',
+          title: "@(#resizeCols)",
+          bodyId: 'resizeModalBody',
+          closeLabel: "@(#close)"
+        })}
+      </div>
+
+      <!-- REORDER COLUMNS -->
+      <div id="reorderButton">
+        <button
+          type="button"
+          class="btn btn-sm ms-1"
+          data-bs-toggle="modal"
+          data-bs-target="#reorderModal"
+          aria-label="@(#reorderCols)"
+        ><i class="bi bi-arrow-left-right"></i></button>
+        
+        <!-- Modal -->
+        @{component({
+          _path: '~components/modal_dialog',
+          id: 'reorderModal',
+          labelId: 'reorderModalLabel',
+          title: "@(#reorderCols)",
+          bodyId: 'reorderModalBody',
+          closeLabel: "@(#close)"
+        })}
+      </div>
+
+      <!-- CLEAR SELECTION -->
+      <button
+        type="button"
+        class="btn btn-sm ms-1"
+        aria-label="@(#clearSelection)"
+        id="clearSelection"
+      ><i class="bi bi-eraser"></i></button>
+      
+      <!-- SELECT ALL -->
+      <button
+        type="button"
+        class="btn btn-sm ms-1"
+        aria-label="@(#selectAll)"
+        id="selectAll"
+      ><i class="bi bi-list-check"></i></button>
+    </div>
+  </div>
+
+  <!----------------------->
+  <!-- TABLE BODY (DATA) -->
+  <!----------------------->
+  <!-- TABLE -->
+  <div
+    class="table-responsive small mt-3"
+    id="tableContainer"
+  >
+    <table
+      class="table table-striped table-hover table-sm"
+      id="table"
+      data-data="@{model.items}"
+    ></table>
+  </div>
+  
+  <!-- LISTVIEW -->
+  <div
+    class="container py-4 d-flex flex-column gap-2 d-none"
+    id="listView"
+  ></div>
+  
+  <!---------------------------------------------------------->
+  <!-- TABLE FOOTER (PAGINATION & CHANGE LISTVIEW COLUMNS)  -->
+  <!---------------------------------------------------------->
+  <div class="d-flex align-items-center justify-content-between mb-3 mobilePaginationContainer">
+    <!-- PAGINATION INFOS & CHANGE LIMIT -->
+    <div class="d-flex flex-column mobilePaginationInfo">
+      <!-- PAGINATION INFOS -->
+      <div class="mobilePaginationRowsInfo">
+        <div>
+          <span>@(#objects) </span>
+          <i id="firstShowingLine">1</i>
+          <span> @(#to) </span>
+          <i id="lastShowingLine">@{model.lastLine}</i>
+          <span> @(#of) </span>
+          <b id="totalLines">@{model.count}</b>
+        </div>
+      </div>
+
+      <!-- CHANGE PAGES LIMIT -->
+      <div class="mt-2 mobilePaginationLimitInfo">
+        <!-- CHANGE PAGES LIMIT INPUT -->
+        <span>(@(#max). </span>
+        <input
+          type="number"
+          class="limitInput"
+          placeholder="100"
+          value="@{model.limit}"
+          id="limitPerPage"
+        >
+
+        <!-- CLEAR PAGES LIMIT BUTTON -->
+        <button
+          type="button"
+          class="btn btn-sm mb-1"
+          aria-label="@(#resetPagination)"
+          id="resetPagination"
+        ><i class="bi bi-x-octagon"></i></button>
+        <span>@(#objectsNoCap) / @(#pageNoCap))</span>
+      </div>
+    </div>
+    
+    <!--PAGINATION & CHANGE LISTVIEW COLS-->
+    <div class="d-flex flex-column">
+      <!-- PAGINATION -->
+      <ul
+        class="pagination m-0"
+        id="pagination"
+      ></ul>
+
+      <!-- CHANGE LISTVIEW COLS -->
+      <div
+        class="mt-4 d-none"
+        id="nrOfColsContainer"
+      >
+        <!-- CHANGE LISTVIEW COLS INPUT -->
+        <span class="me-2">
+          <i class="bi bi-grid-3x2-gap-fill"></i>
+          <span class="ms-1"> -&gt; </span>
+          <i class="bi bi-grid-3x3-gap-fill"></i>
+          <span> : </span>
+        </span>
+        <input
+          type="number"
+          class="limitInput"
+          placeholder="3"
+          value="3"
+          id="nrOfCols"
+        >
+
+        <!-- CLEAR LISTVIEW COLS BUTTON -->
+        <button
+          type="button"
+          class="btn btn-sm mb-1"
+          aria-label="@(#resetCols)"
+          id="resetCols"
+        ><i class="bi bi-x-octagon"></i></button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const table = document.getElementById('table');
+  const data = JSON.parse(table.dataset.data);
+  delete table.dataset.data;
+  table.removeAttribute('data-data');
+  
+  let selectedObject = null;
+  
+  /*////////////////////////////////////////*/
+  function editObject() {
+    if (!checkNotEmptyArray()) return;
+
+    if (selectedObject.length > 1)
+      handleError("@(#errorOnlyOneObject)");
+
+    else {
+      const id = selectedObject[0].id;
+      window.location.href = `/texts/edit/${id}`;
+    };
+  };
+  
+  /*////////////////////////////////////////*/
+  function editObjectWithEnterKey(activeRow) {
+    if (!activeRow) return;
+    const id = activeRow.id;
+    window.location.href = `/texts/edit/${id}`;
+  };
+  
+  /*////////////////////////////////////////*/
+  function deleteObjects() {
+    if (!checkNotEmptyArray()) return;
+
+    swal({
+      title: "@(#objectsDeletion)",
+      text: "@(#areYouSure): " + JSON.stringify(selectedObject),
+      icon: "warning",
+      buttons: ["@(#cancel)", true],
+      dangerMode: true,
+    })
+
+    .then((isConfirmed) => {
+      if (!isConfirmed) return;
+
+      if (selectedObject.length > 1) {
+        http.post(
+          '/texts/bulk-delete',
+          {
+            items: JSON.stringify(selectedObject)
+          },
+          async (data) => {
+            await handleSuccess(data, true);
+            window.location.replace('/texts');
+          },
+          (error) => handleError(error, true),
+        );
+      }
+
+      else
+        http.delete(
+          `/texts/delete/${selectedObject[0].id}`,
+          async (data) => {
+            await handleSuccess(data, true);
+            window.location.replace('/texts');
+          },
+          (error) => handleError(error, true),
+        );
+    });
+  };
+
+  /*////////////////////////////////////////*/
+  function deleteObjectWithDeleteKey(activeRow) {
+    if (!activeRow) return;
+
+    swal({
+      title: "@(#objectsDeletion)",
+      text: "@(#areYouSure): " + JSON.stringify(activeRow),
+      icon: "warning",
+      buttons: ["@(#cancel)", true],
+      dangerMode: true,
+    })
+
+    .then((isConfirmed) => {
+      if (!isConfirmed) return;
+      http.delete(
+        `/texts/delete/${activeRow.id}`,
+        async (data) => {
+          await handleSuccess(data, true);
+          window.location.replace('/texts');
+        },
+        (error) => handleError(error, true),
+      );
+    });
+  };
+  
+  /*////////////////////////////////////////*/
+  function checkNotEmptyArray() {
+    if (!Array.isArray(selectedObject) || selectedObject.length <= 0) {
+      handleError("@(#errorSelectionEmpty)");
+      return false;
+    };
+    return true;
+  };
+  
+  /*////////////////////////////////////////*/
+  new Grid({
+    table: 'table',
+    data: data,
+    uuidProp: 'id',
+    columns: [
+      {
+        id: 'content',
+        name: "@(#text)"
+      },
+      {
+        id: 'createdAt',
+        name: "@(#creationDate)"
+      },
+      { 
+        id: 'updatedAt',
+        name: "@(#modificationDate)"
+      },
+    ],
+    keyNav: {
+      enterFn: editObjectWithEnterKey,
+      deleteFn: deleteObjectWithDeleteKey,
+    },
+    hideId: 'hideDD',
+    search: {
+      id: 'gridSearch',
+      cancel: 'cancelSearch',
+    },
+    sort: true,
+    pagination: {
+      page: @{model.page},
+      limitPerPage: @{model.limit},
+      limitId: 'limitPerPage',
+      pagesUlId: 'pagination',
+      maxButtonsNextToCurrent: 1,
+      pagesLabels: {
+        page: "@(#page)",
+        firstPage: "@(#firstPage)",
+        lastPage: "@(#lastPage)",
+        previousPage: "@(#previousPage)",
+        nextPage: "@(#nextPage)",
+      },
+      firstShowingLineId: 'firstShowingLine',
+      lastShowingLineId: 'lastShowingLine',
+      totalLinesId: 'totalLines',
+      resetBtnId: 'resetPagination',
+    },
+    selection: {
+      mode: 'multiple',
+      clearId: 'clearSelection',
+      selectAllId: 'selectAll',
+      fn: (selection) => {
+        selectedObject = selection;
+        console.log(selectedObject);
+      },
+    },
+    resize: {
+      buttonId: 'resizeButton',
+      modalId: 'resizeModal',
+      modalBodyId: 'resizeModalBody'
+    },
+    reorder: {
+      buttonId: 'reorderButton',
+      modalId: 'reorderModal',
+      modalBodyId: 'reorderModalBody'
+    },
+    listView: {
+      id: 'listView',
+      tableId: 'tableContainer',
+      sortId: 'sortListView',
+      nrOfCols: 3,
+      nrOfColsId: 'nrOfCols',
+      nrOfColsContainer:
+        'nrOfColsContainer',
+      resetBtnId: 'resetCols',
+      buttons: {
+        gridMode: 'gridMode',
+        listMode: 'listMode',
+      },
+      transition: true,
+    },
+  }).renderTable();
+  
+  /*////////////////////////////////////////*/
+  document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener('hide.bs.modal', function (event) {
+      if (document.activeElement) {
+        document.activeElement.blur();
+      };
+    });
+  });
+</script>

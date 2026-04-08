@@ -1,0 +1,94 @@
+@{import('socket.io@4.8.3/socket.io.min.js')}
+@{import('quill@2.0.3/quill.js')}
+@{import('quill@2.0.3/quill.snow.css')}
+
+<main>
+  <!-- ROW (TITLE / HEADER) -->
+  <div class="pb-2 mb-3 border-bottom">
+    <h1 class="h2">@(#editLabel) @(#textNoCap)</h1>
+  </div>
+
+  <!-- ROW (BACK BUTTON) -->
+  <div class="d-flex justify-content-start flex-wrap flex-md-nowrap align-items-center pt-3 pb-2">
+    <a href="/rich-texts" class="btn btn-danger" role="button">
+      <div class="d-flex align-items-stretch">
+        <i class="bi bi-backspace-fill me-2"></i>
+        @(#back)
+      </div>
+    </a>
+  </div>
+  
+  <!-- ROW (EDITOR) -->
+  <div class="pt-3 pb-2">
+    <div id="save-status" class="mb-2 me-3 text-end fst-italic" style="font-size: 0.7rem;">Loading...</div>
+    <div class="mb-3 quillEditor" id="quill"></div>
+  </div>
+
+  <script>
+      const socket = io();
+
+      const statusEl = document.getElementById('save-status');
+      const setStatus = (status) => {
+        if (status === 'typing') statusEl.innerText = 'Typing...';
+        else if (status === 'saving') statusEl.innerText = 'Saving...';
+        else if (status === 'saved') statusEl.innerText = 'Saved!';
+        else statusEl.innerText = status;
+      };
+
+      window.addEventListener('beforeunload', (event) => {
+        socket.emit("save-document", quill.getContents());
+        socket.disconnect();
+      });
+      
+      const TOOLBAR_OPTIONS = [
+        [{ header: [1, 2, 3, 4, 5, 6, false] }],
+        [{ font: [] }],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['bold', 'italic', 'underline'],
+        [{ color: [] }, { background: [] }],
+        [{ script: 'sub' }, { script: 'super' }],
+        [{ align: [] }],
+        ['image', 'blockquote', 'code-block'],
+        ['clean'],
+      ];
+      const editor = DOM('quill').html('').appendNew('div').node;
+      Quill.debug('warn');
+      const quill = new Quill(editor, {
+        theme: 'snow',
+        modules: { toolbar: TOOLBAR_OPTIONS },
+      });
+
+      const SAVE_INTERVAL_MS = 2000;
+
+      if (socket && quill) {
+        const documentId = window.location.href.substring(
+          window.location.href.lastIndexOf('/') + 1
+        );
+
+        /* 1. Call the document (from server) */
+        socket.emit('get-document', documentId);
+
+        /* 5. Get the document content */
+        socket.once('load-document', document => {
+          if (document) quill.setContents(document);
+          setStatus('');
+        });
+
+        /* 6. Save document (on interval) */
+        let saveTimeout;
+        quill.on('text-change', (delta, oldDelta, source) => {
+          if (source !== 'user') return;
+          setStatus('typing');
+          clearTimeout(saveTimeout);
+          saveTimeout = setTimeout(() => {
+            setStatus('saving');
+            socket.emit("save-document", quill.getContents(), (response) => {
+              if (response?.status === "ok") {
+                setStatus('saved');
+              };
+            });
+          }, SAVE_INTERVAL_MS);
+        });
+      };
+  </script>
+</main>

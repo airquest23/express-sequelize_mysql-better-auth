@@ -1,0 +1,37 @@
+@{import('form.css')}
+
+<main class="form-centered w-100 m-auto">
+  <form id="form" class="needs-validation" novalidate>
+    <h4 class="h4 mb-4 fw-normal">@(#otpEnableEmail)</h4>
+    <button
+      class="btn btn-primary w-100 py-2"
+      type="button"
+      onclick="requestEmail()"
+    >@(#sendEmail)</button>
+    @{if* !props.isAuth}
+      <p class="mt-5 fst-italic">
+        @{component({
+          _path: '~svg/go_back',
+          class: 'bi ms-2 opacity-75'
+        })}
+        <a class="link-opacity-75" href="/otp-enable">@(#switchOtpToApp)</a>
+        <i class="bi bi-phone-vibrate-fill ms-2"></i>
+      </p>
+    @{endif*}
+  </form>
+  <script>
+    function requestEmail() {
+      http.post(
+        '/api/auth/two-factor/send-otp',
+        {
+          trustDevice: false
+        },
+        async (data) => {
+          await handleSuccess(data, true);
+          window.location.href = '/otp-enable-email-verify';
+        },
+        (error) => handleError(error, true),
+      );
+    };
+  </script>
+</main>

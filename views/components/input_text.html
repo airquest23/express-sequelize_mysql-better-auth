@@ -1,0 +1,59 @@
+<div class="mb-3 has-validation">
+  @{if* props.label}
+    <label
+      class="form-label"
+
+      @{if* props.id}
+        for="@{props.id}"
+      @{endif*}
+    >@{props.label}</label>
+  @{endif*}
+  
+  <input
+    class="form-control"
+    
+    @{if* props.type}
+      type="@{props.type}"
+    @{else*}
+      type="text"
+    @{endif*}
+
+    @{if* props.id}
+      id="@{props.id}"
+    @{endif*}
+
+    @{if* props.name}
+      name="@{props.name}"
+    @{endif*}
+
+    @{if model.value}
+      value="@{model.value}"
+    @{endif}
+    
+    @{if* props.autocomplete}
+      autocomplete="@{props.autocomplete}"
+    @{endif*}
+
+    @{if* props.minlength}
+      minlength="@{props.minlength}"
+    @{endif*}
+
+    @{if* props.maxlength}
+      maxlength="@{props.maxlength}"
+    @{endif*}
+    
+    @{if* props.required}
+      required
+    @{endif*}
+    
+    @{if* props.disabled}
+      disabled
+    @{endif*}
+  />
+
+  @{if* props.errorMessage}
+  <div class="invalid-feedback fst-italic">
+    @{props.errorMessage}
+  </div>
+  @{endif*}
+</div>
