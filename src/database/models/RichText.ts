@@ -13,27 +13,38 @@ RichText.init({
   id: {
     type: DataTypes.UUID,
     allowNull: false,
-    primaryKey: true
+    primaryKey: true,
   },
   title: {
     type: DataTypes.STRING(100),
-    allowNull: false
+    allowNull: false,
   },
   description: {
-    type: DataTypes.STRING(255)
+    type: DataTypes.STRING(255),
   },
   content: {
-    type: DataTypes.JSON
+    type: DataTypes.JSON,
+    /*get() {
+      const rawValue = this.getDataValue('content');
+      if (typeof rawValue === 'string') {
+        try {
+          return JSON.parse(rawValue);
+        } catch (e) {
+          return rawValue;
+        };
+      };
+      return rawValue;
+    },*/
   },
   userId: {
     type: DataTypes.STRING(36),
     allowNull: false,
     references: {
       model: 'user',
-      key: 'id'
+      key: 'id',
     },
-    onDelete: 'CASCADE'
-  }
+    onDelete: 'CASCADE',
+  },
 },
 {
   sequelize: db,
@@ -43,7 +54,7 @@ RichText.init({
   indexes: [
     {
       name: 'richtext_userId_idx',
-      fields: ['userId']
-    }
-  ]
+      fields: ['userId'],
+    },
+  ],
 });

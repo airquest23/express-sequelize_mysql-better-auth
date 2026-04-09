@@ -15,45 +15,53 @@ export class User extends Model {
   declare twoFactorEnabled?: boolean;
   declare twoFactorEmailOnly?: boolean;
   declare role?: Role;
+  declare isBanned?: boolean;
+  declare isApproved?: boolean;
 };
 
 User.init({
   id: {
     type: DataTypes.STRING(36),
     allowNull: false,
-    primaryKey: true
+    primaryKey: true,
   },
   name: {
     type: DataTypes.STRING(255),
-    allowNull: false
+    allowNull: false,
   },
   email: {
     type: DataTypes.STRING(255),
     allowNull: false,
-    unique: true
+    unique: true,
   },
   emailVerified: {
     type: DataTypes.BOOLEAN,
-    allowNull: false
+    allowNull: false,
   },
   image: {
-    type: DataTypes.TEXT
+    type: DataTypes.TEXT,
   },
   twoFactorEnabled: {
-    type: DataTypes.BOOLEAN
+    type: DataTypes.BOOLEAN,
   },
   twoFactorEmailOnly: {
-    type: DataTypes.BOOLEAN
+    type: DataTypes.BOOLEAN,
   },
   role: {
     type: DataTypes.ENUM(),
     values: ["user", "admin"],
-    defaultValue: "user"
-  }
+    defaultValue: "user",
+  },
+  isBanned: {
+    type: DataTypes.BOOLEAN
+  },
+  isApproved: {
+    type: DataTypes.BOOLEAN
+  },
 },
 {
   sequelize: db,
   modelName: 'user',
   tableName: 'user',
-  timestamps: true
+  timestamps: true,
 });

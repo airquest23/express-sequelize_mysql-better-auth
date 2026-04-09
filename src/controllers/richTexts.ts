@@ -30,8 +30,8 @@ export async function getTextByPk(id: string, language: number, user: User) {
       );
     };
 
-    const text = await RichText.findByPk(id, { raw: true });
-    
+    const text = await RichText.findByPk(id/*, { raw: true }*/);
+
     if (!text) {
       throw new ErrorServer(
         errors['errorObjectNotFound'][language],
@@ -39,14 +39,23 @@ export async function getTextByPk(id: string, language: number, user: User) {
       );
     };
 
-    if (text.userId !== user.id) {
+    const plainText = text.get({ plain: true });
+
+    if (!plainText) {
+      throw new ErrorServer(
+        errors['errorObjectNotFound'][language],
+        sc["404-Not-Found"].code
+      );
+    };
+
+    if (plainText.userId !== user.id) {
       throw new ErrorServer(
         errors['errorGetNoRight'][language],
         sc["401-Unauthorized"].code
       );
     };
 
-    return text;
+    return plainText;
   } catch(e) {
     throw(e);
   };

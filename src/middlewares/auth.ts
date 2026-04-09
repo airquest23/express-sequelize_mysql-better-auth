@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { fromNodeHeaders } from "better-auth/node";
-import { DefaultEventsMap, ExtendedError, Socket } from "socket.io";
+//import { DefaultEventsMap, ExtendedError, Socket } from "socket.io";
 import { auth } from "../utils/auth";
 import { isObject } from "../utils/utils";
 import logger from "../utils/logger";
@@ -57,16 +57,16 @@ const getAuthMiddleware = async (req: Request, res: Response, next: NextFunction
       
       const isAuthenticated =
         user        != null && user        != undefined && isObject(user) &&
-        authSession != null && authSession != undefined && isObject(authSession);
-
+        authSession != null && authSession != undefined && isObject(authSession) &&
+        (!process.env.BETTER_AUTH_FORCE_APPROVAL || user.isApproved) &&
+        !user.isBanned;
+      
       const isEmailVerified = isAuthenticated && user.emailVerified;
 
-      // @ts-ignore
       const isTwoFaEnabled = process.env.BETTER_AUTH_FORCE_ENABLE_TWOFA ?
         isEmailVerified && user.twoFactorEnabled :
         isEmailVerified;
       
-      // @ts-ignore
       const isTwoFaEmailOnly = isEmailVerified && user.twoFactorEmailOnly;
       
       const isAuthorized = isTwoFaEnabled;

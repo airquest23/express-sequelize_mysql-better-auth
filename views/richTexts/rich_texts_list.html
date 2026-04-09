@@ -331,7 +331,7 @@
           },
           async (data) => {
             await handleSuccess(data, true);
-            window.location.replace('/texts');
+            window.location.replace('/rich-texts');
           },
           (error) => handleError(error, true),
         );
@@ -342,7 +342,7 @@
           `/rich-texts/delete/${selectedObject[0].id}`,
           async (data) => {
             await handleSuccess(data, true);
-            window.location.replace('/texts');
+            window.location.replace('/rich-texts');
           },
           (error) => handleError(error, true),
         );

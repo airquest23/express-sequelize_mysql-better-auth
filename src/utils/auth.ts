@@ -131,13 +131,25 @@ export const auth = betterAuth({
 			}
 		},
 		additionalFields: {
-      role: {
+			twoFactorEmailOnly: {
+				type: "boolean",
+        required: false,
+        defaultValue: false,
+				input: false,
+			},
+			role: {
         type: ["user", "admin"],
         required: false,
         defaultValue: "user",
         input: false,
       },
-			twoFactorEmailOnly: {
+			isBanned: {
+				type: "boolean",
+        required: false,
+        defaultValue: false,
+				input: false,
+			},
+			isApproved: {
 				type: "boolean",
         required: false,
         defaultValue: false,

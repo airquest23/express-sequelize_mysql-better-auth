@@ -49,9 +49,13 @@ export const setRichTextsSocket = (
         );
       };
 
-      const text = await RichText.findByPk(id, { raw: true });
+      const text = await RichText.findByPk(id
+        //, { raw: true }
+      );
+      
+      const plainText = text?.get({ plain: true });
 
-      if (text && text.userId !== socket.data.user.id) {
+      if (plainText && plainText.userId !== socket.data.user.id) {
         throw new ErrorServer(
           errors['errorGetNoRight'][socket.data.language],
           sc["401-Unauthorized"].code
@@ -62,7 +66,7 @@ export const setRichTextsSocket = (
       socket.join(id);
 
       //4. Emit the loaded document (or empty)
-      socket.emit('load-document', text?.content || null);
+      socket.emit('load-document', plainText?.content || null);
 
       //7. Save document (receive input)
       socket.on('save-document', async (data, callback) => {
@@ -117,13 +121,20 @@ richTextsRouter.get('/', async (req: Request, res: Response) => {
 
     const texts = await RichText.findAll({
       where: { userId: res.locals.user.id },
-      raw: true,
+      //raw: true,
     });
+
+    const plainTexts = texts.map(t => t.get({ plain: true }));
+
+    /*const fixedTexts = texts.map(text => ({
+      ...text,
+      content: typeof text.content === 'string' ? JSON.parse(text.content) : text.content
+    }));*/
 
     let lastLine: number = 100;
     
-    if (texts.length < limit) {
-      lastLine = z.number().min(0).parse(texts.length);
+    if (plainTexts.length < limit) {
+      lastLine = z.number().min(0).parse(plainTexts.length);
     };
 
     return returnPage(res, 'layout_dashboard', 'richTexts/rich_texts_list',
@@ -132,11 +143,11 @@ richTextsRouter.get('/', async (req: Request, res: Response) => {
         currentPage: 'rich_texts',
       },
       model: {
-        items: parseDBObject(texts) || "" /*JSON.stringify(texts)*/,
+        items: parseDBObject(plainTexts) || "" /*JSON.stringify(texts)*/,
         limit: limit,
         page: page,
         lastLine: lastLine,
-        count: texts.length,
+        count: plainTexts.length,
       },
     });
   }
@@ -256,13 +267,19 @@ setInterval(async () => {
         throw new Error("Id not valid");
       };
 
-      const text = await RichText.findByPk(id, { raw: true });
-      
+      const text = await RichText.findByPk(id/*, { raw: true }*/);
+
       if (!text) {
         throw new Error("Text not found");
       };
 
-      if (text.userId !== data.userId) {
+      const plainText = text.get({ plain: true });
+
+      if (!plainText) {
+        throw new Error("Text not found");
+      };
+
+      if (plainText.userId !== data.userId) {
         throw new Error("User not allowed to edit this text");
       };
 

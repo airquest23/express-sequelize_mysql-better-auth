@@ -1,8 +1,7 @@
-
 import { Request, Response, NextFunction } from "express";
 import { getLanguage as getLang } from "../utils/languages";
 import { isString } from "../utils/utils";
-//import { handleError } from "../utils/server/errors";
+//import { DefaultEventsMap, ExtendedError, Socket } from "socket.io";
 import { statusCodes as sc } from "../utils/server/status-codes";
 import logger from "../utils/logger";
 
@@ -72,7 +71,7 @@ const getLanguageMiddleware = (req: Request, res: Response, next: NextFunction) 
     logger.verbose("*************************************************************");
     logger.verbose("******************** REQUEST FLOW BEGINS ********************");
     logger.debug("------------- [Lang middleware] REQ headers -------------");
-    logger.debug("ReqHeaders:", req.headers || { headers: null });
+    logger.http("ReqHeaders:", req.headers || { headers: null });
 
     let lang = '';
 
