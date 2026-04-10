@@ -1,10 +1,4 @@
-//import path from 'path';
-//import env from "dotenv";
 import { Sequelize } from "sequelize";
-
-/*env.config({
-  path: path.join(__dirname, '../../.env')
-});*/
 
 const db = new Sequelize(
   process.env.DB_DATABASE || "",

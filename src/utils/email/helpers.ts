@@ -1,4 +1,3 @@
-// @ts-nocheck
 import nodemailer from "nodemailer";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
 import { transporter } from "./config";
