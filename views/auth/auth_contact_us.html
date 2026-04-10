@@ -1,0 +1,48 @@
+@{import('form.css')}
+
+<main class="form-centered w-100 m-auto">
+  <form id="form" class="needs-validation" novalidate>
+    <h4 class="h4 mb-4 fw-normal">@(#contactUs)</h4>
+    @{component({
+      _path: '~auth/components/auth_input_email',
+      label: "@(#email)",
+      id: 'email',
+      name: 'email',
+      errorMessage: "@(#errorEmail)",
+      class: 'form-control first',
+    })}
+    <div class="form-floating has-validation">
+      <textarea
+        type="text"
+        class="form-control last"
+        id="message"
+        name="message"
+        style="min-height: 100px;"
+      ></textarea>
+      <label for="message" class="form-label">
+        @(#message)
+      </label>
+    </div>
+    @{view('~components/form_errors')}
+    <button class="btn btn-primary w-100 py-2" type="submit">@(#send)</button>
+  </form>
+  <script>
+    document.getElementById('form')
+    .addEventListener('submit', function(e) {
+      const formData = getFormData(e);
+      if (!formData) return;
+      http.post(
+        '/contact-us',
+        {
+          email: formData.get('email'),
+          message: formData.get('message'),
+        },
+        async (data) => {
+          await handleSuccess(data, true);
+          window.location.replace('/');
+        },
+        (error) => handleError(error, true),
+      );
+    });
+  </script>
+</main>

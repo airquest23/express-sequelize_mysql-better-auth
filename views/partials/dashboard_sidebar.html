@@ -35,7 +35,7 @@
 >
   <!-- MENU -->
   <div
-    class="offcanvas-md offcanvas-end bg-body-tertiary"
+    class="offcanvas-md offcanvas-end d-md-flex flex-column bg-body-tertiary h-100"
     id="sidebarMenu"
     aria-labelledby="sidebarMenuLabel"
     tabindex="-1"
@@ -127,7 +127,7 @@
       <!-- END SEPARATOR -->
       
       <!-- SETTINGS MENU -->
-      <ul class="nav flex-column mb-auto">
+      <ul class="nav flex-column">
         <li class="nav-item">
           <a
             @{if* props.currentPage === 'settings'}
@@ -158,6 +158,31 @@
         </li>
       </ul>
       <!-- END SETTINGS MENU -->
+      
+      @{if model.isAdmin}
+        <!-- SEPARATOR -->
+        <hr class="my-3"/>
+        <!-- END SEPARATOR -->
+        
+        <!-- ADMIN MENU -->
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a
+              @{if* props.currentPage === 'admin'}
+                class="nav-link d-flex align-items-center gap-2 active"
+                aria-current="page"
+              @{else*}
+                class="nav-link d-flex align-items-center gap-2"
+              @{endif*}
+              href="/admin"
+            >
+              <i class="bi bi-incognito"></i>
+              @(#admin)
+            </a>
+          </li>
+        </ul>
+        <!-- END SETTINGS MENU -->
+      @{endif}
     </div>
     <!-- END MENU BODY -->
     
@@ -171,9 +196,23 @@
       id="sidebarMenuFooter"
     >
       <div class="text-center">
+        <a
+          href="/contact-us"
+          class="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover fst-italic"
+        >
+          @(#contactUs)
+        </a>
+      </div>
+
+      <!-- SEPARATOR -->
+      <hr class="my-3"/>
+      <!-- END SEPARATOR -->
+      
+      <div class="text-center mb-3">
         <a href="/?language=en" id="langLinkEn"><span class="badge text-bg-secondary">en</span></a>
         <a href="/?language=fr" id="langLinkFr"><span class="badge text-bg-secondary">fr</span></a>
       </div>
+
       <script>
         window.addEventListener('DOMContentLoaded', function() {
           try {

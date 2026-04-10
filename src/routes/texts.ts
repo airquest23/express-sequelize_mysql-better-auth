@@ -12,8 +12,6 @@ import { returnJson, returnPage/*, returnRedirect*/ } from "../utils/server/resp
 //import { errors } from '../ressources/errors';
 import logger from "../utils/logger";
 
-/////////////////////////////////////
-// Set socket
 /*const documentCache = new Map<string, any>();
 
 setInterval(async () => {
@@ -32,9 +30,45 @@ setInterval(async () => {
       logger.error("Interval save failed", e);
     };
   };
+}, 10000);*/
+
+const documentCache = new Map<string, any>();
+
+setInterval(async () => {
+  for (const [id, data] of documentCache.entries()) {
+    try {
+      if (!id || !isString(id)) {
+        throw new Error("Id not valid");
+      };
+
+      const text = await Text.findByPk(id, { raw: true });
+      
+      if (!text) {
+        throw new Error("Text not found");
+      };
+
+      if (text.userId !== data.userId) {
+        throw new Error("User not allowed to edit this text");
+      };
+
+      const update = await Text.update({
+        content: data.content
+      }, {
+        where: { id: id }
+      });
+
+      documentCache.delete(id);
+      
+      console.log(`Auto-saved document ${id} to DB`);
+    } catch (e) {
+      logger.error("Interval save failed", e);
+    };
+  };
 }, 10000);
 
-export const setTextsSocket = (
+/////////////////////////////////////
+// Set socket
+/*export const setTextsSocket = (
   socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
 ) => {
   //2. Get the document from server (and emit)
@@ -96,6 +130,8 @@ export const setTextsSocket = (
 const textsRouter = Router();
 
 /////////////////////////////////////
+/////////////////////////////////////
+/////////////////////////////////////
 // GET all texts page
 textsRouter.get("/", async (req: Request, res: Response) => {
   try {
@@ -137,6 +173,7 @@ textsRouter.get("/", async (req: Request, res: Response) => {
         page: page,
         lastLine: lastLine,
         count: texts.length,
+        isAdmin: res.locals.user ? res.locals.user.role === 'admin' : false,
       },
     });
   }
@@ -153,8 +190,13 @@ textsRouter.get("/new", (req: Request, res: Response) => {
     //return returnRedirect(res, '/texts/edit/' + id);
     return returnPage(res, 'layout_dashboard', 'texts/texts_add',
     {
-      currentPage : 'texts',
-      isEdit: false,
+      props: {
+        currentPage : 'texts',
+        isEdit: false,
+      },
+      model: {
+        isAdmin: res.locals.user ? res.locals.user.role === 'admin' : false,
+      },
     });
   }
   catch(e) {
@@ -162,6 +204,39 @@ textsRouter.get("/new", (req: Request, res: Response) => {
   };
 });
 
+/////////////////////////////////////
+// GET edit text (form) page
+textsRouter.get("/edit/:id", async (req: Request, res: Response) => {
+  try {
+    const id = escapeHTML(z.string().nonempty().parse(req.params.id));
+
+    /*return returnPage(res, 'layout_dashboard', 'texts/texts_edit',
+    {
+      currentPage: 'texts',
+      isEdit: true,
+    });*/
+
+    const text = await getTextByPk(id, res.locals.language, res.locals.user);
+
+    return returnPage(res, 'layout_dashboard', 'texts/texts_edit',
+    {
+      props: {
+        currentPage: 'texts',
+        isEdit: true,
+      },
+      model: {
+        id: text?.id || "",
+        content: text?.content || "",
+        isAdmin: res.locals.user ? res.locals.user.role === 'admin' : false,
+      },
+    });
+  } catch(e) {
+    return handleError(e, res);
+  };
+});
+
+/////////////////////////////////////
+/////////////////////////////////////
 /////////////////////////////////////
 // POST insert new text API
 textsRouter.post("/insert", async (req: Request, res: Response) => {
@@ -195,36 +270,6 @@ textsRouter.post("/insert", async (req: Request, res: Response) => {
 });
 
 /////////////////////////////////////
-// GET edit text (form) page
-textsRouter.get("/edit/:id", async (req: Request, res: Response) => {
-  try {
-    const id = escapeHTML(z.string().nonempty().parse(req.params.id));
-
-    /*return returnPage(res, 'layout_dashboard', 'texts/texts_edit',
-    {
-      currentPage: 'texts',
-      isEdit: true,
-    });*/
-
-    const text = await getTextByPk(id, res.locals.language, res.locals.user);
-
-    return returnPage(res, 'layout_dashboard', 'texts/texts_edit',
-    {
-      props: {
-        currentPage: 'texts',
-        isEdit: true,
-      },
-      model: {
-        id: text?.id || "",
-        content: text?.content || "",
-      },
-    });
-  } catch(e) {
-    return handleError(e, res);
-  };
-});
-
-/////////////////////////////////////
 // PUT update one text API
 textsRouter.put("/update/:id", async (req: Request, res: Response) => {
   try {
@@ -245,40 +290,6 @@ textsRouter.put("/update/:id", async (req: Request, res: Response) => {
 
 /////////////////////////////////////
 // PUT auto-save one text API
-const documentCache = new Map<string, any>();
-
-setInterval(async () => {
-  for (const [id, data] of documentCache.entries()) {
-    try {
-      if (!id || !isString(id)) {
-        throw new Error("Id not valid");
-      };
-
-      const text = await Text.findByPk(id, { raw: true });
-      
-      if (!text) {
-        throw new Error("Text not found");
-      };
-
-      if (text.userId !== data.userId) {
-        throw new Error("User not allowed to edit this text");
-      };
-
-      const update = await Text.update({
-        content: data.content
-      }, {
-        where: { id: id }
-      });
-
-      documentCache.delete(id);
-      
-      console.log(`Auto-saved document ${id} to DB`);
-    } catch (e) {
-      logger.error("Interval save failed", e);
-    };
-  };
-}, 10000);
-
 textsRouter.put("/auto-save/:id", async (req: Request, res: Response) => {
   try {
     const id = escapeHTML(z.string().nonempty().parse(req.params.id));

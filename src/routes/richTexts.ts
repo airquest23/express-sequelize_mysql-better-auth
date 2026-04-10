@@ -12,8 +12,6 @@ import { returnJson, returnPage/*, returnRedirect*/ } from '../utils/server/resp
 //import { errors } from '../ressources/errors';
 import logger from '../utils/logger';
 
-/////////////////////////////////////
-// Set socket
 /*const documentCache = new Map<string, any>();
 
 setInterval(async () => {
@@ -32,9 +30,51 @@ setInterval(async () => {
       logger.error("Interval save failed", e);
     };
   };
+}, 10000);*/
+
+const documentCache = new Map<string, any>();
+
+setInterval(async () => {
+  for (const [id, data] of documentCache.entries()) {
+    try {
+      if (!id || !isString(id)) {
+        throw new Error("Id not valid");
+      };
+
+      const text = await RichText.findByPk(id/*, { raw: true }*/);
+
+      if (!text) {
+        throw new Error("Text not found");
+      };
+
+      const plainText = text.get({ plain: true });
+
+      if (!plainText) {
+        throw new Error("Text not found");
+      };
+
+      if (plainText.userId !== data.userId) {
+        throw new Error("User not allowed to edit this text");
+      };
+
+      const update = await RichText.update({
+        content: data.content
+      }, {
+        where: { id: id }
+      });
+
+      documentCache.delete(id);
+      
+      console.log(`Auto-saved document ${id} to DB`);
+    } catch (e) {
+      logger.error("Interval save failed", e);
+    };
+  };
 }, 10000);
 
-export const setRichTextsSocket = (
+/////////////////////////////////////
+// Set socket
+/*export const setRichTextsSocket = (
   socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
 ) => {
   //2. Get the document from server (and emit)
@@ -100,6 +140,8 @@ export const setRichTextsSocket = (
 const richTextsRouter = Router();
 
 /////////////////////////////////////
+/////////////////////////////////////
+/////////////////////////////////////
 // GET all texts page
 richTextsRouter.get('/', async (req: Request, res: Response) => {
   try {
@@ -148,6 +190,7 @@ richTextsRouter.get('/', async (req: Request, res: Response) => {
         page: page,
         lastLine: lastLine,
         count: plainTexts.length,
+        isAdmin: res.locals.user ? res.locals.user.role === 'admin' : false,
       },
     });
   }
@@ -164,8 +207,13 @@ richTextsRouter.get('/new', (req: Request, res: Response) => {
     //return returnRedirect(res, '/rich-texts/edit/' + id);
     return returnPage(res, 'layout_dashboard', 'richTexts/rich_texts_add',
     {
-      currentPage : 'rich_texts',
-      isEdit: false,
+      props: {
+        currentPage : 'rich_texts',
+        isEdit: false,
+      },
+      model: {
+        isAdmin: res.locals.user ? res.locals.user.role === 'admin' : false,
+      },
     });
   }
   catch(e) {
@@ -173,6 +221,41 @@ richTextsRouter.get('/new', (req: Request, res: Response) => {
   };
 });
 
+/////////////////////////////////////
+// GET edit text (form) page
+richTextsRouter.get('/edit/:id', async (req: Request, res: Response) => {
+  try {
+    const id = escapeHTML(z.string().nonempty().parse(req.params.id));
+
+    /*return returnPage(res, 'layout_dashboard', 'richTexts/rich_texts_edit_socket',
+    {
+      currentPage: 'rich_texts',
+      isEdit: true,
+    });*/
+
+    const text = await getTextByPk(id, res.locals.language, res.locals.user);
+
+    return returnPage(res, 'layout_dashboard', 'richTexts/rich_texts_edit',
+    {
+      props: {
+        currentPage: 'rich_texts',
+        isEdit: true,
+      },
+      model: {
+        id: text?.id || "",
+        content: parseDBObject(text?.content) || "" /*text && text.content ?
+          process.env.NODE_ENV === 'production' ? text.content : JSON.stringify(text.content)
+          : ""*/,
+        isAdmin: res.locals.user ? res.locals.user.role === 'admin' : false,
+      },
+    });
+  } catch(e) {
+    return handleError(e, res);
+  };
+});
+
+/////////////////////////////////////
+/////////////////////////////////////
 /////////////////////////////////////
 // POST insert new text API
 richTextsRouter.post("/insert", async (req: Request, res: Response) => {
@@ -206,38 +289,6 @@ richTextsRouter.post("/insert", async (req: Request, res: Response) => {
 });
 
 /////////////////////////////////////
-// GET edit text (form) page
-richTextsRouter.get('/edit/:id', async (req: Request, res: Response) => {
-  try {
-    const id = escapeHTML(z.string().nonempty().parse(req.params.id));
-
-    /*return returnPage(res, 'layout_dashboard', 'richTexts/rich_texts_edit_socket',
-    {
-      currentPage: 'rich_texts',
-      isEdit: true,
-    });*/
-
-    const text = await getTextByPk(id, res.locals.language, res.locals.user);
-
-    return returnPage(res, 'layout_dashboard', 'richTexts/rich_texts_edit',
-    {
-      props: {
-        currentPage: 'rich_texts',
-        isEdit: true,
-      },
-      model: {
-        id: text?.id || "",
-        content: parseDBObject(text?.content) || "" /*text && text.content ?
-          process.env.NODE_ENV === 'production' ? text.content : JSON.stringify(text.content)
-          : ""*/,
-      },
-    });
-  } catch(e) {
-    return handleError(e, res);
-  };
-});
-
-/////////////////////////////////////
 // PUT update one text API
 richTextsRouter.put("/update/:id", async (req: Request, res: Response) => {
   try {
@@ -258,46 +309,6 @@ richTextsRouter.put("/update/:id", async (req: Request, res: Response) => {
 
 /////////////////////////////////////
 // PUT auto-save one text API
-const documentCache = new Map<string, any>();
-
-setInterval(async () => {
-  for (const [id, data] of documentCache.entries()) {
-    try {
-      if (!id || !isString(id)) {
-        throw new Error("Id not valid");
-      };
-
-      const text = await RichText.findByPk(id/*, { raw: true }*/);
-
-      if (!text) {
-        throw new Error("Text not found");
-      };
-
-      const plainText = text.get({ plain: true });
-
-      if (!plainText) {
-        throw new Error("Text not found");
-      };
-
-      if (plainText.userId !== data.userId) {
-        throw new Error("User not allowed to edit this text");
-      };
-
-      const update = await RichText.update({
-        content: data.content
-      }, {
-        where: { id: id }
-      });
-
-      documentCache.delete(id);
-      
-      console.log(`Auto-saved document ${id} to DB`);
-    } catch (e) {
-      logger.error("Interval save failed", e);
-    };
-  };
-}, 10000);
-
 richTextsRouter.put("/auto-save/:id", async (req: Request, res: Response) => {
   try {
     const id = escapeHTML(z.string().nonempty().parse(req.params.id));

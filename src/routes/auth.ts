@@ -1,17 +1,21 @@
 import { Router, Request, Response } from "express";
 import { fromNodeHeaders } from "better-auth/node";
 import z from "zod";
+import { v4 as uuidv4 } from 'uuid';
 import { auth } from "../utils/auth";
 import { statusCodes as sc } from "../utils/server/status-codes";
-import { handleError } from "../utils/server/errors";
+import { ErrorServer, handleError } from "../utils/server/errors";
 import { escapeHTML } from "../utils/utils";
 import { returnJson, returnPage, returnRedirect } from "../utils/server/responses";
 import { User } from "../database/models/User";
+import { AdminMessage } from "../database/models/AdminMessage";
 
 /////////////////////////////////////
 // Auth pages / API
 const authRouter = Router();
 
+/////////////////////////////////////
+/////////////////////////////////////
 /////////////////////////////////////
 // Home page
 authRouter.get("/", (req: Request, res: Response) => {
@@ -22,7 +26,12 @@ authRouter.get("/", (req: Request, res: Response) => {
     if (user?.isAuthorized)
       return returnPage(res, 'layout_dashboard', 'home_logged',
       {
-        currentPage: 'home',
+        props: {
+          currentPage: 'home'
+        },
+        model: {
+          isAdmin: user ? user.role === 'admin' : false
+        },
       });
     
     // Unauthorized home page (cover)
@@ -378,102 +387,6 @@ authRouter.get("/otp-enable-email-verify", (req: Request, res: Response) => {
   };
 });
 
-// TwoFA enabling (by OTP only) API
-authRouter.get("/otp-enable-otp-only", async (req: Request, res: Response) => {
-  try {
-    const user = res.locals.user;
-
-    const dbQuery = await User.update(
-      {
-        twoFactorEmailOnly: false,
-      },
-      {
-        where: {
-          id: user?.id,
-        },
-      }
-    );
-
-    if (Array.isArray(dbQuery) && dbQuery.length > 0 && dbQuery[0] === 1)
-      return returnJson(res, {}, sc["202-Accepted"].code);
-
-    else {
-      const resetUser = await User.update(
-        {
-          twoFactorEnabled: false,
-          twoFactorEmailOnly: false,
-        },
-        {
-          where: {
-            id: user?.id,
-          },
-        }
-      );
-
-      if (Array.isArray(resetUser) && resetUser.length > 0 && resetUser[0] === 1)
-        throw new Error(res.locals.language === 0 ?
-          "Impossible d'activer l'app OTP, vous devez utiliser les emails" :
-          "Unable to activate the OTP app, you must use emails");
-      
-      else
-        throw new Error(res.locals.language === 0 ?
-          "Il y a eu un problème dans la désactivation du TwoFA, vous devrez peut-être contacter un administrateur" :
-          "There was an issue deactivating TwoFA, you may need to contact an administrator");
-    };
-  }
-  catch(e) {
-    return handleError(e, res);
-  };
-});
-
-// TwoFA enabling (by email only) API
-authRouter.get("/otp-enable-email-only", async (req: Request, res: Response) => {
-  try {
-    const user = res.locals.user;
-
-    const dbQuery = await User.update(
-      {
-        twoFactorEmailOnly: true,
-      },
-      {
-        where: {
-          id: user?.id,
-        },
-      }
-    );
-
-    if (Array.isArray(dbQuery) && dbQuery.length > 0 && dbQuery[0] === 1)
-      return returnJson(res, {}, sc["202-Accepted"].code);
-
-    else {
-      const resetUser = await User.update(
-        {
-          twoFactorEnabled: false,
-          twoFactorEmailOnly: false,
-        },
-        {
-          where: {
-            id: user?.id,
-          },
-        }
-      );
-
-      if (Array.isArray(resetUser) && resetUser.length > 0 && resetUser[0] === 1)
-        throw new Error(res.locals.language === 0 ?
-          "Impossible d'activer l'envoi de codes par email, vous devez utiliser une app" :
-          "Unable to activate email OTP, you must use an app");
-      
-      else
-        throw new Error(res.locals.language === 0 ?
-          "Il y a eu un problème dans la désactivation du TwoFA, vous devrez peut-être contacter un administrateur" :
-          "There was an issue deactivating TwoFA, you may need to contact an administrator");
-    };
-  }
-  catch(e) {
-    return handleError(e, res);
-  };
-});
-
 /////////////////////////////////////
 // TwoFA verification page
 authRouter.get("/otp-verify", (req: Request, res: Response) => {
@@ -501,7 +414,7 @@ authRouter.get("/otp-verify", (req: Request, res: Response) => {
   };
 });
 
-// TwoFA verification with backup code
+// TwoFA verification with backup code page
 authRouter.get("/otp-verify-code", (req: Request, res: Response) => {
   try {
     const user = res.locals.user;
@@ -581,6 +494,97 @@ authRouter.get("/otp-verify-email-only", (req: Request, res: Response) => {
 });
 
 /////////////////////////////////////
+/////////////////////////////////////
+/////////////////////////////////////
+// TwoFA enabling (by OTP only) API
+authRouter.get("/otp-enable-otp-only", async (req: Request, res: Response) => {
+  try {
+    const user = res.locals.user;
+
+    const dbQuery = await User.update(
+      {
+        twoFactorEmailOnly: false,
+      },
+      { where: {
+        id: user?.id,
+      }}
+    );
+
+    if (Array.isArray(dbQuery) && dbQuery.length > 0 && dbQuery[0] === 1)
+      return returnJson(res, {}, sc["202-Accepted"].code);
+
+    else {
+      const resetUser = await User.update(
+        {
+          twoFactorEnabled: false,
+          twoFactorEmailOnly: false,
+        },
+        { where: {
+          id: user?.id,
+        }}
+      );
+
+      if (Array.isArray(resetUser) && resetUser.length > 0 && resetUser[0] === 1)
+        throw new Error(res.locals.language === 0 ?
+          "Impossible d'activer l'app OTP, vous devez utiliser les emails" :
+          "Unable to activate the OTP app, you must use emails");
+      
+      else
+        throw new Error(res.locals.language === 0 ?
+          "Il y a eu un problème dans la désactivation du TwoFA, vous devrez peut-être contacter un administrateur" :
+          "There was an issue deactivating TwoFA, you may need to contact an administrator");
+    };
+  }
+  catch(e) {
+    return handleError(e, res);
+  };
+});
+
+// TwoFA enabling (by email only) API
+authRouter.get("/otp-enable-email-only", async (req: Request, res: Response) => {
+  try {
+    const user = res.locals.user;
+
+    const dbQuery = await User.update(
+      {
+        twoFactorEmailOnly: true,
+      },
+      { where: {
+        id: user?.id,
+      }}
+    );
+
+    if (Array.isArray(dbQuery) && dbQuery.length > 0 && dbQuery[0] === 1)
+      return returnJson(res, {}, sc["202-Accepted"].code);
+
+    else {
+      const resetUser = await User.update(
+        {
+          twoFactorEnabled: false,
+          twoFactorEmailOnly: false,
+        },
+        { where: {
+          id: user?.id,
+        }}
+      );
+
+      if (Array.isArray(resetUser) && resetUser.length > 0 && resetUser[0] === 1)
+        throw new Error(res.locals.language === 0 ?
+          "Impossible d'activer l'envoi de codes par email, vous devez utiliser une app" :
+          "Unable to activate email OTP, you must use an app");
+      
+      else
+        throw new Error(res.locals.language === 0 ?
+          "Il y a eu un problème dans la désactivation du TwoFA, vous devrez peut-être contacter un administrateur" :
+          "There was an issue deactivating TwoFA, you may need to contact an administrator");
+    };
+  }
+  catch(e) {
+    return handleError(e, res);
+  };
+});
+
+/////////////////////////////////////
 // Signout flow API
 authRouter.get("/signout", async (req: Request, res: Response) => {
   try {
@@ -588,6 +592,64 @@ authRouter.get("/signout", async (req: Request, res: Response) => {
       headers: fromNodeHeaders(req.headers),
     });
     return returnRedirect(res, '/', sc["202-Accepted"].code);
+  }
+  catch(e) {
+    return handleError(e, res);
+  };
+});
+
+/////////////////////////////////////
+/////////////////////////////////////
+/////////////////////////////////////
+// Contact us page
+authRouter.get("/contact-us", (req: Request, res: Response) => {
+  try {
+    const user = res.locals.user;
+
+    return returnPage(res, 'layout_cover', 'auth/auth_contact_us',
+    {
+      props: {
+        currentPage: 'login',
+        hideSignup: true,
+      },
+      model: {
+        hideLogin: user ? true : false,
+        showSignout: user ? true : false,
+      },
+    });
+  }
+  catch(e) {
+    return handleError(e, res);
+  };
+});
+
+authRouter.post("/contact-us", async (req: Request, res: Response) => {
+  try {
+    const body = z.object({
+      email: z.email(),
+      message: z.string().nullable(),
+    }).parse(req.body);
+
+    const updBody = {
+      //...body,
+      id: uuidv4(),
+      from: body.email,
+      message: body.message,
+    };
+
+    const insert = await AdminMessage.upsert(updBody);
+
+    if (Array.isArray(insert) && insert[0] && insert[0].dataValues?.id)
+      return returnJson(res, {
+        id: insert[0].dataValues.id
+      }, sc["201-Created"].code);
+
+    else
+      throw new ErrorServer(
+        sc["417-Expectation-Failed"].message + '.\n' +
+        sc["417-Expectation-Failed"].description,
+        sc["417-Expectation-Failed"].code
+      );
   }
   catch(e) {
     return handleError(e, res);

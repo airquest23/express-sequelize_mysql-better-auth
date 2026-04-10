@@ -548,5 +548,30 @@ export const ressources: { [key: string]: string[] } = {
   listView: [
     'Vue liste',
     'List view'
-  ]
+  ],
+
+  ///////////////////////////////////////
+  ///////////////////////////////////////
+  // Contact us
+  contactUs: [
+    'Contactez-nous',
+    'Contact us'
+  ],
+  message: [
+    'Message',
+    'Message'
+  ],
+
+  ///////////////////////////////////////
+  ///////////////////////////////////////
+  // Admin
+  admin: [
+    'Admin',
+    'Admin'
+  ],
+  from: [
+    'De',
+    'From'
+  ],
+
 } as const;

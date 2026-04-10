@@ -151,8 +151,9 @@ export const auth = betterAuth({
 			},
 			isApproved: {
 				type: "boolean",
-        required: false,
-        defaultValue: false,
+        required: false, //true,
+				defaultValue: false,
+        //defaultValue: process.env.BETTER_AUTH_FORCE_APPROVAL ? false : true,
 				input: false,
 			},
 		}

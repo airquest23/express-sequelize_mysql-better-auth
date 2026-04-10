@@ -1,6 +1,27 @@
 /*
 * Globals
 */
+@media (max-width: 768px) {
+  body {
+    height: 100% !important;
+  }
+
+  .main-container {
+    height: 100% !important;
+  }
+}
+
+@media (min-width: 768px) {
+  body {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .main-container {
+    flex-grow: 1 !important;
+  }
+}
+
 main {
   flex: 1 0 0;
   padding: 1.5rem !important;
@@ -41,6 +62,7 @@ main {
 @media (min-width: 768px) {
   .sidebar {
     width: 0px;
+    height: 100% !important;
     opacity: 0;
   }
   
@@ -70,6 +92,10 @@ main {
     flex: 0 0 auto;
     width: 25%;
     opacity: 1;
+  }
+
+  .offcanvas-md .offcanvas-body {
+    flex-grow: 1 !important;
   }
 }
 

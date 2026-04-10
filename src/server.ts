@@ -20,8 +20,9 @@ import getAuthMiddleware from './middlewares/auth';
 
 import authRouter from './routes/auth';
 import textsRouter from './routes/texts';
-import userRouter from './routes/user';
 import richTextsRouter from './routes/richTexts';
+import userRouter from './routes/user';
+import adminRouter from './routes/admin';
 
 const app = express();
 
@@ -172,13 +173,46 @@ const checkAuthMiddleWare = (req: Request, res: Response, next: NextFunction) =>
 app.use('/texts', checkAuthMiddleWare, textsRouter);
 app.use('/rich-texts', checkAuthMiddleWare, richTextsRouter);
 app.use('/user', checkAuthMiddleWare, userRouter);
+app.use('/admin', checkAuthMiddleWare,
+  (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if(!res.locals.user || res.locals.user?.role !== 'admin') {
+        return handleError(
+          new ErrorServer(
+            sc['401-Unauthorized'].message + '.\n' +
+            sc['401-Unauthorized'].description,
+            sc['401-Unauthorized'].code
+          ),
+          res
+        );
+      }
+      else { next(); };
+    }
+    catch(e) {
+      next(e);
+    };
+  },
+  adminRouter
+);
 
 //////////////////////
 // Page 404 error
 //////////////////////
 app.use((req: Request, res: Response) => {
   try {
-    return returnPage(res, 'layout_cover', '404');
+    const user = res.locals.user;
+    
+    return returnPage(res, 'layout_cover', '404',
+    {
+      props: {
+        currentPage: 'login',
+        hideSignup: true,
+      },
+      model: {
+        hideLogin: user ? true : false,
+        showSignout: user ? true : false,
+      },
+    });
   }
   catch(e) {
     return handleError(e, res);

@@ -3,16 +3,19 @@ import z from "zod";
 import { handleError } from "../utils/server/errors";
 import { returnJson, returnPage } from "../utils/server/responses";
 import { auth } from "../utils/auth";
-import { User } from "../database/models/User";
+import { parseDBObject } from "../utils/utils";
 
 /////////////////////////////////////
 // User pages / API
 const userRouter = Router();
 
+/////////////////////////////////////
+/////////////////////////////////////
+/////////////////////////////////////
 // User settings page
 userRouter.get("/", async (req: Request, res: Response) => {
   try {
-    const user: User = res.locals.user;
+    const user = res.locals.user;
 
     let backupCodes: string[] = [];
     if (user.twoFactorEnabled && !user.twoFactorEmailOnly) {
@@ -32,23 +35,89 @@ userRouter.get("/", async (req: Request, res: Response) => {
         email: user.email,
         twoFactorEnabled: user.twoFactorEnabled,
         twoFactorEmailOnly: user.twoFactorEmailOnly,
-        backupCodes: JSON.stringify(backupCodes),
+        backupCodes: parseDBObject(backupCodes) || "", //JSON.stringify(backupCodes),
+        isAdmin: user ? user.role === 'admin' : false,
       },
-    }
-    /*{
-      currentPage: 'settings',
-      name: user.name,
-      email: user.email,
-      twoFactorEnabled: user.twoFactorEnabled,
-      twoFactorEmailOnly: user.twoFactorEmailOnly,
-      forceEnableTwoFa: process.env.BETTER_AUTH_FORCE_ENABLE_TWOFA,
-    }*/);
+    });
   }
   catch(e) {
     return handleError(e, res);
   };
 });
 
+// User TwoFA enabling page (switch to app OTP)
+userRouter.get("/otp-enable", (req: Request, res: Response) => {
+  try {
+    const user = res.locals.user;
+
+    return returnPage(res, 'layout_cover', 'auth/auth_otp_enable',
+    {
+      props: {
+        currentPage: 'login',
+        hideSignup: true,
+        isAuth: true,
+        issuer: process.env.APP_NAME,
+      },
+      model: {
+        hideLogin: user ? true : false,
+        showSignout: user ? true : false,
+      },
+    });
+  }
+  catch(e) {
+    return handleError(e, res);
+  };
+});
+
+// User TwoFA enabling (by email) page (switch to email OTP)
+userRouter.get("/otp-enable-email", (req: Request, res: Response) => {
+  try {
+    const user = res.locals.user;
+
+    return returnPage(res, 'layout_cover', 'auth/auth_otp_enable_email',
+    {
+      props: {
+        currentPage: 'login',
+        hideSignup: true,
+        isAuth: true,
+      },
+      model: {
+        hideLogin: user ? true : false,
+        showSignout: user ? true : false,
+      },
+    });
+  }
+  catch(e) {
+    return handleError(e, res);
+  };
+});
+
+// User TwoFA generate codes page
+userRouter.get("/otp-codes-generate", (req: Request, res: Response) => {
+  try {
+    const user = res.locals.user;
+
+    return returnPage(res, 'layout_cover', 'auth/auth_otp_codes_generate',
+    {
+      props: {
+        currentPage: 'login',
+        hideSignup: true,
+        isAuth: true,
+      },
+      model: {
+        hideLogin: user ? true : false,
+        showSignout: user ? true : false,
+      },
+    });
+  }
+  catch(e) {
+    return handleError(e, res);
+  };
+});
+
+/////////////////////////////////////
+/////////////////////////////////////
+/////////////////////////////////////
 // User TwoFA updating API
 userRouter.post("/update-twofa", (req: Request, res: Response) => {
   try {
@@ -109,76 +178,6 @@ userRouter.post("/update-twofa", (req: Request, res: Response) => {
       message: language === 0 ?
         "Aucune modification n'a été apportée" :
         "No changes have been made",
-    });
-  }
-  catch(e) {
-    return handleError(e, res);
-  };
-});
-
-// User TwoFA enabling page (switch to app OTP)
-userRouter.get("/otp-enable", (req: Request, res: Response) => {
-  try {
-    const user = res.locals.user;
-
-    return returnPage(res, 'layout_cover', 'auth/auth_otp_enable',
-    {
-      props: {
-        currentPage: 'login',
-        hideSignup: true,
-        isAuth: true,
-        issuer: process.env.APP_NAME,
-      },
-      model: {
-        hideLogin: user ? true : false,
-        showSignout: user ? true : false,
-      },
-    });
-  }
-  catch(e) {
-    return handleError(e, res);
-  };
-});
-
-// User TwoFA enabling (by email) page (switch to email OTP)
-userRouter.get("/otp-enable-email", (req: Request, res: Response) => {
-  try {
-    const user = res.locals.user;
-
-    return returnPage(res, 'layout_cover', 'auth/auth_otp_enable_email',
-    {
-      props: {
-        currentPage: 'login',
-        hideSignup: true,
-        isAuth: true,
-      },
-      model: {
-        hideLogin: user ? true : false,
-        showSignout: user ? true : false,
-      },
-    });
-  }
-  catch(e) {
-    return handleError(e, res);
-  };
-});
-
-// User TwoFA generate codes
-userRouter.get("/otp-codes-generate", (req: Request, res: Response) => {
-  try {
-    const user = res.locals.user;
-
-    return returnPage(res, 'layout_cover', 'auth/auth_otp_codes_generate',
-    {
-      props: {
-        currentPage: 'login',
-        hideSignup: true,
-        isAuth: true,
-      },
-      model: {
-        hideLogin: user ? true : false,
-        showSignout: user ? true : false,
-      },
     });
   }
   catch(e) {
