@@ -4,11 +4,11 @@
 <!-- ROW (TITLE / HEADER) -->
 <div class="pb-2 mb-3 border-bottom">
   <h1 class="h2">
-    @{if* props.isEdit}
+    @{if props.isEdit}
       @(#editLabel) @(#textNoCap)
-    @{else*}
+    @{else}
       @(#new) @(#textNoCap)
-    @{endif*}
+    @{endif}
   </h1>
 </div>
 
@@ -52,7 +52,7 @@
         theme: 'snow',
         modules: { toolbar: TOOLBAR_OPTIONS },
       });
-      @{if* props.isEdit}
+      @{if props.isEdit}
         if (quill) {
           const wrapper = document.getElementById("quill");
           const data = JSON.parse(wrapper.dataset.data);
@@ -60,7 +60,7 @@
           wrapper.removeAttribute('data-data');
           quill.setContents(data);
         };
-      @{endif*}
+      @{endif}
     </script>
 
     <div class="d-flex justify-content-between">

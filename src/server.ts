@@ -206,11 +206,9 @@ app.use((req: Request, res: Response) => {
     {
       props: {
         currentPage: 'login',
-        hideSignup: true,
       },
       model: {
-        hideLogin: user ? true : false,
-        showSignout: user ? true : false,
+        isLoggedIn: user ? true : false,
       },
     });
   }

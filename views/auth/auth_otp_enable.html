@@ -2,11 +2,11 @@
 
 <main class="form-centered w-100 m-auto">
   <form id="form" class="needs-validation" novalidate>
-    @{if* props.isAuth}
+    @{if props.isAuth}
       <h4 class="h4 mb-4 fw-normal">@(#otpSwitchToEnable)</h4>
-    @{else*}
+    @{else}
       <h4 class="h4 mb-4 fw-normal">@(#otpEnable)</h4>
-    @{endif*}
+    @{endif}
     @{component({
       _path: '~auth/components/auth_input_name',
       disabled: true,
@@ -22,12 +22,12 @@
     })}
     @{view('~components/form_errors')}
     <button class="btn btn-primary w-100 py-2" type="submit">@(#activate)</button>
-    @{if* !props.isAuth}
+    @{if !props.isAuth}
       <p class="mt-5 fst-italic">
         <a class="link-opacity-75" href="/otp-enable-email">@(#switchOtpToEmailOnly)</a>
         <i class="bi bi-envelope-arrow-up-fill ms-2"></i>
       </p>
-    @{endif*}
+    @{endif}
     <p class="mt-5 fst-italic">
       <a class="link-opacity-75" href="/password-forgot">@(#passwordForgot)</a>
       @{component({

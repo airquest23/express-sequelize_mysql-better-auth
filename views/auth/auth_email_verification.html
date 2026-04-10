@@ -1,22 +1,22 @@
 @{import('form.css')}
 
 <main class="form-centered w-100 m-auto">
-  @{if !model.isEmailVerified}
+  @{if_nocache !model.isEmailVerified}
     <div class="invalid-feedback d-block">
       @(#errorEmailVerification)
     </div>
-  @{else}
+  @{else_nocache}
     <div class="valid-feedback d-block">
       @(#successEmailVerification)
     </div>
-  @{endif}
+  @{endif_nocache}
   
-  @{if !model.isEmailVerified}
+  @{if_nocache !model.isEmailVerified}
     <p class="mt-5 fst-italic">
       <a class="link-opacity-75" href="/email-verification-resend">@(#resendEmail)</a>
       <i class="bi bi-envelope-arrow-up-fill ms-2"></i>
     </p>
-  @{endif}
+  @{endif_nocache}
   
   <p class="mt-5 fst-italic">
     @{component({

@@ -71,12 +71,12 @@
 
         <li class="nav-item mt-3">
           <a
-            @{if* props.currentPage === 'home'}
+            @{if props.currentPage === 'home'}
               class="nav-link d-flex align-items-center gap-2 active"
               aria-current="page"
-            @{else*}
+            @{else}
               class="nav-link d-flex align-items-center gap-2"
-            @{endif*}
+            @{endif}
             href="/"
           >
             <svg class="bi" aria-hidden="true">
@@ -88,12 +88,12 @@
 
         <li class="nav-item">
           <a
-            @{if* props.currentPage === 'texts'}
+            @{if props.currentPage === 'texts'}
               class="nav-link d-flex align-items-center gap-2 active"
               aria-current="page"
-            @{else*}
+            @{else}
               class="nav-link d-flex align-items-center gap-2"
-            @{endif*}
+            @{endif}
             href="/texts"
           >
             <svg class="bi" aria-hidden="true">
@@ -105,12 +105,12 @@
 
         <li class="nav-item">
           <a
-            @{if* props.currentPage === 'rich_texts'}
+            @{if props.currentPage === 'rich_texts'}
               class="nav-link d-flex align-items-center gap-2 active"
               aria-current="page"
-            @{else*}
+            @{else}
               class="nav-link d-flex align-items-center gap-2"
-            @{endif*}
+            @{endif}
             href="/rich-texts"
           >
             <svg class="bi" aria-hidden="true">
@@ -130,12 +130,12 @@
       <ul class="nav flex-column">
         <li class="nav-item">
           <a
-            @{if* props.currentPage === 'settings'}
+            @{if props.currentPage === 'settings'}
               class="nav-link d-flex align-items-center gap-2 active"
               aria-current="page"
-            @{else*}
+            @{else}
               class="nav-link d-flex align-items-center gap-2"
-            @{endif*}
+            @{endif}
             href="/user"
           >
             <svg class="bi" aria-hidden="true">
@@ -159,7 +159,7 @@
       </ul>
       <!-- END SETTINGS MENU -->
       
-      @{if model.isAdmin}
+      @{if_nocache model.isAdmin}
         <!-- SEPARATOR -->
         <hr class="my-3"/>
         <!-- END SEPARATOR -->
@@ -168,12 +168,12 @@
         <ul class="nav flex-column">
           <li class="nav-item">
             <a
-              @{if* props.currentPage === 'admin'}
+              @{if props.currentPage === 'admin'}
                 class="nav-link d-flex align-items-center gap-2 active"
                 aria-current="page"
-              @{else*}
+              @{else}
                 class="nav-link d-flex align-items-center gap-2"
-              @{endif*}
+              @{endif}
               href="/admin"
             >
               <i class="bi bi-incognito"></i>
@@ -182,7 +182,7 @@
           </li>
         </ul>
         <!-- END SETTINGS MENU -->
-      @{endif}
+      @{endif_nocache}
     </div>
     <!-- END MENU BODY -->
     

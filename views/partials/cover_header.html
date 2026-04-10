@@ -3,53 +3,53 @@
     <h3 class="float-md-start mb-0">@(#appName)</h3>
     <nav class="nav nav-masthead justify-content-center float-md-end">
       <a
-        @{if* props.currentPage === 'home'}
+        @{if props.currentPage === 'home'}
           class="nav-link fw-bold py-1 px-0 active"
           aria-current="page"
-        @{else*}
+        @{else}
           class="nav-link fw-bold py-1 px-0"
-        @{endif*}
+        @{endif}
         href="/"
       >
         @(#home)
       </a>
       
-      @{if !model.hideLogin}
+      @{if_nocache !model.isLoggedIn}
         <a
-          @{if* props.currentPage === 'login'}
+          @{if props.currentPage === 'login'}
             class="nav-link fw-bold py-1 px-0 active"
             aria-current="page"
-          @{else*}
+          @{else}
             class="nav-link fw-bold py-1 px-0"
-          @{endif*}
+          @{endif}
           href="/login"
         >
           @(#login)
         </a>
-      @{endif}
+      @{endif_nocache}
       
-      @{if* !props.hideSignup}
+      @{if_nocache !model.isLoggedIn}
         <a
-          @{if* props.currentPage === 'signup'}
+          @{if props.currentPage === 'signup'}
             class="nav-link fw-bold py-1 px-0 active"
             aria-current="page"
-          @{else*}
+          @{else}
             class="nav-link fw-bold py-1 px-0"
-          @{endif*}
+          @{endif}
           href="/signup"
         >
           @(#signUp)
         </a>
-      @{endif*}
+      @{endif_nocache}
       
-      @{if props.hideSignup && model.showSignout}
+      @{if_nocache model.isLoggedIn}
         <a
           class="nav-link fw-bold py-1 px-0"
           href="/signout"
         >
           @(#signOut)
         </a>
-      @{endif}
+      @{endif_nocache}
     </nav>
   </div>
 </header>

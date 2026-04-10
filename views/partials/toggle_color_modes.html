@@ -28,12 +28,12 @@
     type="button"
     aria-expanded="false"
     data-bs-toggle="dropdown"
-    aria-label="Toggle theme (auto)"
+    aria-label="@(#toggleTheme)"
   >
     <svg class="bi cm-bi my-1 theme-icon-active" aria-hidden="true">
       <use href="#circle-half"></use>
     </svg>
-    <span class="visually-hidden" id="bd-theme-text">Toggle theme</span>
+    <span class="visually-hidden" id="bd-theme-text">@(#toggleTheme)</span>
   </button>
   <ul
     class="dropdown-menu dropdown-menu-end shadow"
@@ -49,7 +49,7 @@
         <svg class="bi cm-bi me-2 opacity-50" aria-hidden="true">
           <use href="#sun-fill"></use>
         </svg>
-        Light
+        @(#light)
         <svg class="bi cm-bi ms-auto d-none" aria-hidden="true">
           <use href="#check2"></use>
         </svg>
@@ -65,7 +65,7 @@
         <svg class="bi cm-bi me-2 opacity-50" aria-hidden="true">
           <use href="#moon-stars-fill"></use>
         </svg>
-        Dark
+        @(#dark)
         <svg class="bi cm-bi ms-auto d-none" aria-hidden="true">
           <use href="#check2"></use>
         </svg>
@@ -81,7 +81,7 @@
         <svg class="bi cm-bi me-2 opacity-50" aria-hidden="true">
           <use href="#circle-half"></use>
         </svg>
-        Auto
+        @(#auto)
         <svg class="bi cm-bi ms-auto d-none" aria-hidden="true">
           <use href="#check2"></use>
         </svg>

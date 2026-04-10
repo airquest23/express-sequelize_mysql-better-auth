@@ -574,4 +574,24 @@ export const ressources: { [key: string]: string[] } = {
     'From'
   ],
 
+  ///////////////////////////////////////
+  ///////////////////////////////////////
+  // Theme
+  toggleTheme: [
+    'Slectionnez le thème',
+    'Toggle theme'
+  ],
+  dark: [
+    'Sombre',
+    'Dark'
+  ],
+  light: [
+    'Clair',
+    'Light'
+  ],
+  auto: [
+    'Auto',
+    'Auto'
+  ],
+
 } as const;

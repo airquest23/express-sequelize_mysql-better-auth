@@ -82,13 +82,13 @@ export function parseTemplate(filePath: string, options: any, m: any = {}) {
         let compCode = "let out = [];\n" +
           "out.push(`" +
           component
-            .replace(/(?<!\\)@{if\* (.*?)}/g                , "`);\n if ($1) { out.push(`")
-            .replace(/(?<!\\)@{else if\* (.*?)}/g           , "`);\n } else if ($1) { out.push(`")
-            .replace(/(?<!\\)@{else\*}/g                    , "`);\n } else { out.push(`")
-            .replace(/(?<!\\)@{endif\*}/g                   , "`);\n }\n out.push(`")
+            .replace(/(?<!\\)@{if (.*?)}/g                , "`);\n if ($1) { out.push(`")
+            .replace(/(?<!\\)@{else if (.*?)}/g           , "`);\n } else if ($1) { out.push(`")
+            .replace(/(?<!\\)@{else}/g                    , "`);\n } else { out.push(`")
+            .replace(/(?<!\\)@{endif}/g                   , "`);\n }\n out.push(`")
 
-            .replace(/(?<!\\)@{for each\* (.*?) in (.*?)}/g , "`);\n ($2 || []).forEach(($1) => { out.push(`")
-            .replace(/(?<!\\)@{endfor\*}/g                  , "`);\n });\n out.push(`")
+            .replace(/(?<!\\)@{for each (.*?) in (.*?)}/g , "`);\n ($2 || []).forEach(($1) => { out.push(`")
+            .replace(/(?<!\\)@{endfor}/g                  , "`);\n });\n out.push(`")
           + "`);\n return out.join('');";
 
         const compRender = new Function('props', compCode);
@@ -157,13 +157,13 @@ export function parseTemplate(filePath: string, options: any, m: any = {}) {
   let preCode = "let out = [];\n" +
     "out.push(`" +
     content
-      .replace(/(?<!\\)@{if\* (.*?)}/g                , "`);\n if ($1) { out.push(`")
-      .replace(/(?<!\\)@{else if\* (.*?)}/g           , "`);\n } else if ($1) { out.push(`")
-      .replace(/(?<!\\)@{else\*}/g                    , "`);\n } else { out.push(`")
-      .replace(/(?<!\\)@{endif\*}/g                   , "`);\n }\n out.push(`")
+      .replace(/(?<!\\)@{if (.*?)}/g                , "`);\n if ($1) { out.push(`")
+      .replace(/(?<!\\)@{else if (.*?)}/g           , "`);\n } else if ($1) { out.push(`")
+      .replace(/(?<!\\)@{else}/g                    , "`);\n } else { out.push(`")
+      .replace(/(?<!\\)@{endif}/g                   , "`);\n }\n out.push(`")
 
-      .replace(/(?<!\\)@{for each\* (.*?) in (.*?)}/g , "`);\n ($2 || []).forEach(($1) => { out.push(`")
-      .replace(/(?<!\\)@{endfor\*}/g                  , "`);\n });\n out.push(`")
+      .replace(/(?<!\\)@{for each (.*?) in (.*?)}/g , "`);\n ($2 || []).forEach(($1) => { out.push(`")
+      .replace(/(?<!\\)@{endfor}/g                  , "`);\n });\n out.push(`")
     + "`);\n return out.join('');";
   //console.log(preCode);
   const preRender = new Function('props', preCode);
@@ -184,13 +184,13 @@ export function parseTemplate(filePath: string, options: any, m: any = {}) {
       
       .replace(/(?<!\\)@{model\.(.*?)}/g            , '${escapeHTML(model?.$1 ?? "")}')
 
-      .replace(/(?<!\\)@{if (.*?)}/g                , "`);\n if ($1) { out.push(`")
-      .replace(/(?<!\\)@{else if (.*?)}/g           , "`);\n } else if ($1) { out.push(`")
-      .replace(/(?<!\\)@{else}/g                    , "`);\n } else { out.push(`")
-      .replace(/(?<!\\)@{endif}/g                   , "`);\n }\n out.push(`")
+      .replace(/(?<!\\)@{if_nocache (.*?)}/g                , "`);\n if ($1) { out.push(`")
+      .replace(/(?<!\\)@{else if_nocache (.*?)}/g           , "`);\n } else if ($1) { out.push(`")
+      .replace(/(?<!\\)@{else_nocache}/g                    , "`);\n } else { out.push(`")
+      .replace(/(?<!\\)@{endif_nocache}/g                   , "`);\n }\n out.push(`")
 
-      .replace(/(?<!\\)@{for each (.*?) in (.*?)}/g , "`);\n ($2 || []).forEach(($1) => { out.push(`")
-      .replace(/(?<!\\)@{endfor}/g                  , "`);\n });\n out.push(`")
+      .replace(/(?<!\\)@{for each_nocache (.*?) in (.*?)}/g , "`);\n ($2 || []).forEach(($1) => { out.push(`")
+      .replace(/(?<!\\)@{endfor_nocache}/g                  , "`);\n });\n out.push(`")
     + "`);\n return out.join('');";
   
   //////////////////////

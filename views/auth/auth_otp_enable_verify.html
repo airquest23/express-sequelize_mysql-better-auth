@@ -61,18 +61,18 @@
           trustDevice: trustDevice
         },
         async (data) => {
-          @{if* !props.isAuth}
+          @{if !props.isAuth}
           http.get(
             '/otp-enable-otp-only',
             async (data) => {
-          @{endif*}
+          @{endif}
               await handleSuccess(data, true);
               window.location.replace('/');
-          @{if* !props.isAuth}
+          @{if !props.isAuth}
             },
             (error) => handleError(error, true),
           );
-          @{endif*}
+          @{endif}
         },
         (error) => handleError(error, true),
       );

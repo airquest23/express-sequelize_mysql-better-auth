@@ -54,13 +54,11 @@ userRouter.get("/otp-enable", (req: Request, res: Response) => {
     {
       props: {
         currentPage: 'login',
-        hideSignup: true,
         isAuth: true,
         issuer: process.env.APP_NAME,
       },
       model: {
-        hideLogin: user ? true : false,
-        showSignout: user ? true : false,
+        isLoggedIn: user ? true : false,
       },
     });
   }
@@ -78,12 +76,10 @@ userRouter.get("/otp-enable-email", (req: Request, res: Response) => {
     {
       props: {
         currentPage: 'login',
-        hideSignup: true,
         isAuth: true,
       },
       model: {
-        hideLogin: user ? true : false,
-        showSignout: user ? true : false,
+        isLoggedIn: user ? true : false,
       },
     });
   }
@@ -101,12 +97,10 @@ userRouter.get("/otp-codes-generate", (req: Request, res: Response) => {
     {
       props: {
         currentPage: 'login',
-        hideSignup: true,
         isAuth: true,
       },
       model: {
-        hideLogin: user ? true : false,
-        showSignout: user ? true : false,
+        isLoggedIn: user ? true : false,
       },
     });
   }

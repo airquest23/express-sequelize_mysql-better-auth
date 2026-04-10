@@ -73,23 +73,23 @@
               role="switch"
               id="twoFactorEnabled"
               name="twoFactorEnabled"
-              @{if model.twoFactorEnabled}
+              @{if_nocache model.twoFactorEnabled}
                 checked
-              @{endif}
-              @{if* props.forceEnableTwoFa}
+              @{endif_nocache}
+              @{if props.forceEnableTwoFa}
                 disabled
-              @{endif*}
+              @{endif}
             >
             <label class="form-check-label" for="twoFactorEnabled">
               @(#userTwoFaActivateSwitch)
             </label>
           </div>
 
-          @{if* props.forceEnableTwoFa}
+          @{if props.forceEnableTwoFa}
             <div class="invalid-feedback" style="display: block;">
               @(#userTwoFaForcedWarning)
             </div>
-          @{endif*}
+          @{endif}
           
           <hr/>
           
@@ -100,9 +100,9 @@
               name="twoFactorType"
               id="twoFactorOTP"
               value="twoFactorOTP"
-              @{if !model.twoFactorEmailOnly}
+              @{if_nocache !model.twoFactorEmailOnly}
                 checked
-              @{endif}
+              @{endif_nocache}
             >
             <label class="form-check-label" for="twoFactorOTP">
               @(#userTwoFaActivateOTP)
@@ -117,9 +117,9 @@
               name="twoFactorType"
               id="twoFactorEmail"
               value="twoFactorEmail"
-              @{if model.twoFactorEmailOnly}
+              @{if_nocache model.twoFactorEmailOnly}
                 checked
-              @{endif}
+              @{endif_nocache}
             >
             <label class="form-check-label" for="twoFactorEmail">
               @(#userTwoFaActivateEmail)
@@ -127,7 +127,7 @@
             </label>
           </div>
           
-          @{if !model.twoFactorEmailOnly}
+          @{if_nocache !model.twoFactorEmailOnly}
             <hr/>
             
             <div class="my-3 text-danger text-center">
@@ -145,7 +145,7 @@
                 @(#otpCodesGenerateBtn)
               </button>
             </div>
-          @{endif}
+          @{endif_nocache}
         </div>
 
         <div class="card-footer text-center">
@@ -159,7 +159,7 @@
   </div>
 
   <script>
-    @{if !model.twoFactorEmailOnly && model.backupCodes}
+    @{if_nocache !model.twoFactorEmailOnly && model.backupCodes}
       try {
         const backupCodesEl = document.getElementById('backupCodes');
         const backupCodes = JSON.parse(backupCodesEl.dataset.data);
@@ -173,7 +173,7 @@
       } catch(e) {
         handleError("@(#errorBackupCodes)", true);
       };
-    @{endif}
+    @{endif_nocache}
     
     const form = document.getElementById('formOTPSettings');
     form.addEventListener('submit', async function (e) {

@@ -1,11 +1,11 @@
 <!-- ROW (TITLE / HEADER) -->
 <div class="pb-2 mb-3 border-bottom">
   <h1 class="h2">
-    @{if* props.isEdit}
+    @{if props.isEdit}
       @(#editLabel) @(#textNoCap)
-    @{else*}
+    @{else}
       @(#new) @(#textNoCap)
-    @{endif*}
+    @{endif}
   </h1>
 </div>
 
@@ -33,7 +33,7 @@
         id="content"
         name="content"
         style="min-height: 300px;"
-      >@{if* props.isEdit}@{model.content}@{endif*}</textarea>
+      >@{if props.isEdit}@{model.content}@{endif}</textarea>
     </div>
 
     @{view('~components/form_errors')}

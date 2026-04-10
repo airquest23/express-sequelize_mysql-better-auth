@@ -6,8 +6,10 @@
 (() => {
   'use strict';
 
-  const getStoredTheme = () => localStorage.getItem('theme');
-  const setStoredTheme = theme => localStorage.setItem('theme', theme);
+  const themeStorage = `${window.appName}.theme`;
+
+  const getStoredTheme = () => localStorage.getItem(themeStorage);
+  const setStoredTheme = theme => localStorage.setItem(themeStorage, theme);
 
   const getPreferredTheme = () => {
     const storedTheme = getStoredTheme();
@@ -19,7 +21,10 @@
 
   const setTheme = theme => {
     if (theme === 'auto') {
-      document.documentElement.setAttribute('data-bs-theme', (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+      document.documentElement.setAttribute(
+        'data-bs-theme',
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      );
     } else {
       document.documentElement.setAttribute('data-bs-theme', theme);
     };

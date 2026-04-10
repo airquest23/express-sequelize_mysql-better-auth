@@ -40,11 +40,9 @@ authRouter.get("/", (req: Request, res: Response) => {
       {
         props: {
           currentPage: 'home',
-          hideSignup: false,
         },
         model: {
-          hideLogin: user ? true : false,
-          showSignout: user ? true : false,
+          isLoggedIn: user ? true : false,
         },
       });
   }
@@ -67,11 +65,9 @@ authRouter.get("/signup", (req: Request, res: Response) => {
       {
         props: {
           currentPage: 'signup',
-          hideSignup: false,
         },
         model: {
-          hideLogin: user ? true : false,
-          showSignout: user ? true : false,
+          isLoggedIn: user ? true : false,
         },
       });
   }
@@ -102,11 +98,9 @@ authRouter.get("/login", (req: Request, res: Response) => {
       {
         props: {
           currentPage: 'login',
-          hideSignup: false,
         },
         model: {
-          hideLogin: user ? true : false,
-          showSignout: user ? true : false,
+          isLoggedIn: user ? true : false,
         },
       });
   }
@@ -123,11 +117,9 @@ authRouter.get("/password-forgot", (req: Request, res: Response) => {
     {
       props: {
         currentPage: 'login',
-        hideSignup: true,
       },
       model: {
-        hideLogin: res.locals.user ? true : false,
-        showSignout: res.locals.user ? true : false,
+        isLoggedIn: res.locals.user ? true : false,
       },
     });
   }
@@ -145,11 +137,9 @@ authRouter.get("/password-reset", (req: Request, res: Response) => {
     {
       props: {
         currentPage: 'login',
-        hideSignup: true,
       },
       model: {
-        hideLogin: res.locals.user ? true : false,
-        showSignout: res.locals.user ? true : false,
+        isLoggedIn: res.locals.user ? true : false,
         token: token || "",
       },
     });
@@ -167,11 +157,9 @@ authRouter.get("/email-reset", (req: Request, res: Response) => {
     {
       props: {
         currentPage: 'login',
-        hideSignup: true,
       },
       model: {
-        hideLogin: res.locals.user ? true : false,
-        showSignout: res.locals.user ? true : false,
+        isLoggedIn: res.locals.user ? true : false,
       },
     });
   }
@@ -190,11 +178,9 @@ authRouter.get("/email-verification", (req: Request, res: Response) => {
     {
       props: {
         currentPage: 'login',
-        hideSignup: true,
       },
       model: {
-        hideLogin: user ? true : false,
-        showSignout: user ? true : false,
+        isLoggedIn: user ? true : false,
         isEmailVerified: user?.isEmailVerified,
       },
     });
@@ -217,11 +203,9 @@ authRouter.get("/email-verification-resend", (req: Request, res: Response) => {
       {
         props: {
           currentPage: 'login',
-          hideSignup: true,
         },
         model: {
-          hideLogin: user ? true : false,
-          showSignout: user ? true : false,
+          isLoggedIn: user ? true : false,
         },
       });
   }
@@ -240,11 +224,9 @@ authRouter.get("/email-verified", (req: Request, res: Response) => {
     {
       props: {
         currentPage: 'login',
-        hideSignup: true,
       },
       model: {
-        hideLogin: user ? true : false,
-        showSignout: user ? true : false,
+        isLoggedIn: user ? true : false,
         isEmailVerified: true,
       },
     });
@@ -268,12 +250,10 @@ authRouter.get("/otp-disable", (req: Request, res: Response) => {
       {
         props: {
           currentPage: 'login',
-          hideSignup: true,
           issuer: process.env.APP_NAME,
         },
         model: {
-          hideLogin: user ? true : false,
-          showSignout: user ? true : false,
+          isLoggedIn: user ? true : false,
         },
       });
   }
@@ -295,12 +275,10 @@ authRouter.get("/otp-enable", (req: Request, res: Response) => {
       {
         props: {
           currentPage: 'login',
-          hideSignup: true,
           issuer: process.env.APP_NAME,
         },
         model: {
-          hideLogin: user ? true : false,
-          showSignout: user ? true : false,
+          isLoggedIn: user ? true : false,
         },
       });
   }
@@ -322,11 +300,9 @@ authRouter.get("/otp-enable-verify", (req: Request, res: Response) => {
       {
         props: {
           currentPage: 'login',
-          hideSignup: true,
         },
         model: {
-          hideLogin: user ? true : false,
-          showSignout: user ? true : false,
+          isLoggedIn: user ? true : false,
         },
       });
   }
@@ -348,11 +324,9 @@ authRouter.get("/otp-enable-email", (req: Request, res: Response) => {
       {
         props: {
           currentPage: 'login',
-          hideSignup: true,
         },
         model: {
-          hideLogin: user ? true : false,
-          showSignout: user ? true : false,
+          isLoggedIn: user ? true : false,
         },
       });
   }
@@ -374,11 +348,9 @@ authRouter.get("/otp-enable-email-verify", (req: Request, res: Response) => {
       {
         props: {
           currentPage: 'login',
-          hideSignup: true,
         },
         model: {
-          hideLogin: user ? true : false,
-          showSignout: user ? true : false,
+          isLoggedIn: user ? true : false,
         },
       });
   }
@@ -401,11 +373,9 @@ authRouter.get("/otp-verify", (req: Request, res: Response) => {
       {
         props: {
           currentPage: 'login',
-          hideSignup: true,
         },
         model: {
-          hideLogin: user ? true : false,
-          showSignout: user ? true : false,
+          isLoggedIn: user ? true : false,
         },
       });
   }
@@ -427,11 +397,9 @@ authRouter.get("/otp-verify-code", (req: Request, res: Response) => {
       {
         props: {
           currentPage: 'login',
-          hideSignup: true,
         },
         model: {
-          hideLogin: user ? true : false,
-          showSignout: user ? true : false,
+          isLoggedIn: user ? true : false,
         },
       });
   }
@@ -453,11 +421,9 @@ authRouter.get("/otp-verify-email", (req: Request, res: Response) => {
       {
         props: {
           currentPage: 'login',
-          hideSignup: true,
         },
         model: {
-          hideLogin: user ? true : false,
-          showSignout: user ? true : false,
+          isLoggedIn: user ? true : false,
         },
       });
   }
@@ -479,12 +445,10 @@ authRouter.get("/otp-verify-email-only", (req: Request, res: Response) => {
       {
         props: {
           currentPage: 'login',
-          hideSignup: true,
           hideOTPLink: true,
         },
         model: {
-          hideLogin: user ? true : false,
-          showSignout: user ? true : false,
+          isLoggedIn: user ? true : false,
         },
       });
   }
@@ -610,11 +574,9 @@ authRouter.get("/contact-us", (req: Request, res: Response) => {
     {
       props: {
         currentPage: 'login',
-        hideSignup: true,
       },
       model: {
-        hideLogin: user ? true : false,
-        showSignout: user ? true : false,
+        isLoggedIn: user ? true : false,
       },
     });
   }

@@ -1,59 +1,59 @@
 <div class="mb-3 has-validation">
-  @{if* props.label}
+  @{if props.label}
     <label
       class="form-label"
 
-      @{if* props.id}
+      @{if props.id}
         for="@{props.id}"
-      @{endif*}
+      @{endif}
     >@{props.label}</label>
-  @{endif*}
+  @{endif}
   
   <input
     class="form-control"
     
-    @{if* props.type}
+    @{if props.type}
       type="@{props.type}"
-    @{else*}
+    @{else}
       type="text"
-    @{endif*}
+    @{endif}
 
-    @{if* props.id}
+    @{if props.id}
       id="@{props.id}"
-    @{endif*}
+    @{endif}
 
-    @{if* props.name}
+    @{if props.name}
       name="@{props.name}"
-    @{endif*}
+    @{endif}
 
-    @{if model.value}
+    @{if_nocache model.value}
       value="@{model.value}"
+    @{endif_nocache}
+    
+    @{if props.autocomplete}
+      autocomplete="@{props.autocomplete}"
+    @{endif}
+
+    @{if props.minlength}
+      minlength="@{props.minlength}"
+    @{endif}
+
+    @{if props.maxlength}
+      maxlength="@{props.maxlength}"
     @{endif}
     
-    @{if* props.autocomplete}
-      autocomplete="@{props.autocomplete}"
-    @{endif*}
-
-    @{if* props.minlength}
-      minlength="@{props.minlength}"
-    @{endif*}
-
-    @{if* props.maxlength}
-      maxlength="@{props.maxlength}"
-    @{endif*}
-    
-    @{if* props.required}
+    @{if props.required}
       required
-    @{endif*}
+    @{endif}
     
-    @{if* props.disabled}
+    @{if props.disabled}
       disabled
-    @{endif*}
+    @{endif}
   />
 
-  @{if* props.errorMessage}
+  @{if props.errorMessage}
   <div class="invalid-feedback fst-italic">
     @{props.errorMessage}
   </div>
-  @{endif*}
+  @{endif}
 </div>
