@@ -1,23 +1,21 @@
 @{import('form.css')}
 
 <main class="form-centered w-100 m-auto">
-  @{if_nocache !model.isEmailVerified}
-    <div class="invalid-feedback d-block">
-      @(#errorEmailVerification)
-    </div>
-  @{else_nocache}
+  @{if_nocache (model.user && model.user.isEmailVerified) || props.isEmailVerified}
     <div class="valid-feedback d-block">
       @(#successEmailVerification)
     </div>
-  @{endif_nocache}
-  
-  @{if_nocache !model.isEmailVerified}
+  @{else_nocache}
+    <div class="invalid-feedback d-block">
+      @(#errorEmailVerification)
+    </div>
+
     <p class="mt-5 fst-italic">
       <a class="link-opacity-75" href="/email-verification-resend">@(#resendEmail)</a>
       <i class="bi bi-envelope-arrow-up-fill ms-2"></i>
     </p>
   @{endif_nocache}
-  
+    
   <p class="mt-5 fst-italic">
     @{component({
       _path: '~svg/go_back',

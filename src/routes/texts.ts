@@ -168,12 +168,11 @@ textsRouter.get("/", async (req: Request, res: Response) => {
         currentPage: 'texts',
       },
       model: {
-        items: parseDBObject(texts) || "" /*JSON.stringify(texts)*/,
+        items: parseDBObject(texts) || "",
         limit: limit,
         page: page,
         lastLine: lastLine,
         count: texts.length,
-        isAdmin: res.locals.user ? res.locals.user.isAdmin : false,
       },
     });
   }
@@ -190,13 +189,8 @@ textsRouter.get("/new", (req: Request, res: Response) => {
     //return returnRedirect(res, '/texts/edit/' + id);
     return returnPage(res, 'layout_dashboard', 'texts/texts_add',
     {
-      props: {
-        currentPage : 'texts',
-        isEdit: false,
-      },
-      model: {
-        isAdmin: res.locals.user ? res.locals.user.isAdmin : false,
-      },
+      currentPage : 'texts',
+      isEdit: false,
     });
   }
   catch(e) {
@@ -227,7 +221,6 @@ textsRouter.get("/edit/:id", async (req: Request, res: Response) => {
       model: {
         id: text?.id || "",
         content: text?.content || "",
-        isAdmin: res.locals.user ? res.locals.user.isAdmin : false,
       },
     });
   } catch(e) {
@@ -315,10 +308,8 @@ textsRouter.put("/auto-save/:id", async (req: Request, res: Response) => {
 textsRouter.delete("/delete/:id", async (req: Request, res: Response) => {
   try {
     const id = escapeHTML(z.string().nonempty().parse(req.params.id));
-
     const text = await getTextByPk(id, res.locals.language, res.locals.user);
     const deletion = await Text.destroy({ where: { id: id } });
-    
     return returnJson(res, {}, sc["205-Reset-Content"].code);
   } catch(e) {
     return handleError(e, res);

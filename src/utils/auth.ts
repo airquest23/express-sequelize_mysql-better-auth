@@ -205,14 +205,14 @@ export const auth = betterAuth({
 			logger.debug("Response:", ctx.context.returned || { response: null });
 			logger.debug("------------- [Auth Hooks] AFTER ends -------------");
 			
-			if (ctx.path === '/sign-up/email' && process.env.BETTER_AUTH_FORCE_APPROVAL) {
+			if (process.env.BETTER_AUTH_FORCE_APPROVAL && ctx.path === '/sign-up/email') {
 				try {
 					const insert = await AdminMessage.upsert({
 						id: uuidv4(),
 						from: '"' + ctx.body.name + '" <' + ctx.body.email + '>',
 						message: "New subscription approval!",
 					});
-
+					
 					void sendEmail({
 						to: '"' + ctx.body.name + '" <' + ctx.body.email + '>',
 						subject: 'Approval',

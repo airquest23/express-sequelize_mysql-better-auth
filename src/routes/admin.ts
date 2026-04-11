@@ -12,8 +12,8 @@ const adminMessageSchema = z.object({
   from: z.email(),
   message: z.string().nullable(),
 });
+
 const adminMessagesSchema = z.array(adminMessageSchema);
-//type AdminMessagesType = z.infer<typeof adminMessagesSchema>;
 
 /////////////////////////////////////
 // Texts pages / API
@@ -57,12 +57,11 @@ adminRouter.get("/", async (req: Request, res: Response) => {
         currentPage: 'texts',
       },
       model: {
-        items: parseDBObject(messages) || "" /*JSON.stringify(texts)*/,
+        items: parseDBObject(messages) || "",
         limit: limit,
         page: page,
         lastLine: lastLine,
         count: messages.length,
-        isAdmin: res.locals.user ? res.locals.user.isAdmin : false,
       },
     });
   }
@@ -78,10 +77,7 @@ adminRouter.get("/", async (req: Request, res: Response) => {
 adminRouter.delete("/delete/:id", async (req: Request, res: Response) => {
   try {
     const id = escapeHTML(z.string().nonempty().parse(req.params.id));
-
-    //const text = await getTextByPk(id, res.locals.language, res.locals.user);
     const deletion = await AdminMessage.destroy({ where: { id: id } });
-    
     return returnJson(res, {}, sc["205-Reset-Content"].code);
   } catch(e) {
     return handleError(e, res);
@@ -110,8 +106,7 @@ adminRouter.post("/bulk-delete", async (req: Request, res: Response) => {
     const toDelete: string[] = [];
     
     for (let i = 0; i < parsed.length; i++) {
-      //const checked = await getTextByPk(parsed[i].id, res.locals.language, res.locals.user);
-      /*if (checked)*/toDelete.push(parsed[i].id);
+      toDelete.push(parsed[i].id);
     };
 
     const deletion = await AdminMessage.destroy({ where: { id: toDelete } });

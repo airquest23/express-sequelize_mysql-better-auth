@@ -185,12 +185,11 @@ richTextsRouter.get('/', async (req: Request, res: Response) => {
         currentPage: 'rich_texts',
       },
       model: {
-        items: parseDBObject(plainTexts) || "" /*JSON.stringify(texts)*/,
+        items: parseDBObject(plainTexts) || "",
         limit: limit,
         page: page,
         lastLine: lastLine,
         count: plainTexts.length,
-        isAdmin: res.locals.user ? res.locals.user.isAdmin : false,
       },
     });
   }
@@ -207,13 +206,8 @@ richTextsRouter.get('/new', (req: Request, res: Response) => {
     //return returnRedirect(res, '/rich-texts/edit/' + id);
     return returnPage(res, 'layout_dashboard', 'richTexts/rich_texts_add',
     {
-      props: {
-        currentPage : 'rich_texts',
-        isEdit: false,
-      },
-      model: {
-        isAdmin: res.locals.user ? res.locals.user.isAdmin : false,
-      },
+      currentPage : 'rich_texts',
+      isEdit: false,
     });
   }
   catch(e) {
@@ -243,10 +237,7 @@ richTextsRouter.get('/edit/:id', async (req: Request, res: Response) => {
       },
       model: {
         id: text?.id || "",
-        content: parseDBObject(text?.content) || "" /*text && text.content ?
-          process.env.NODE_ENV === 'production' ? text.content : JSON.stringify(text.content)
-          : ""*/,
-        isAdmin: res.locals.user ? res.locals.user.isAdmin : false,
+        content: parseDBObject(text?.content) || "",
       },
     });
   } catch(e) {
@@ -334,10 +325,8 @@ richTextsRouter.put("/auto-save/:id", async (req: Request, res: Response) => {
 richTextsRouter.delete('/delete/:id', async (req: Request, res: Response) => {
   try {
     const id = escapeHTML(z.string().nonempty().parse(req.params.id));
-
     const text = await getTextByPk(id, res.locals.language, res.locals.user);
     const deletion = await RichText.destroy({ where: { id: id } });
-    
     return returnJson(res, {}, sc['205-Reset-Content'].code);
   } catch(e) {
     return handleError(e, res);

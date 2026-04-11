@@ -26,7 +26,7 @@
               errorMessage: "@(#errorName)",
             },
             model: {
-              value: "@{model.name}",
+              value: "@{model.user?.name}",
             },
           })}
           @{view('~components/form_errors')}
@@ -73,7 +73,7 @@
               role="switch"
               id="twoFactorEnabled"
               name="twoFactorEnabled"
-              @{if_nocache model.twoFactorEnabled}
+              @{if_nocache model.user?.twoFactorEnabled}
                 checked
               @{endif_nocache}
               @{if props.forceEnableTwoFa}
@@ -100,7 +100,7 @@
               name="twoFactorType"
               id="twoFactorOTP"
               value="twoFactorOTP"
-              @{if_nocache !model.twoFactorEmailOnly}
+              @{if_nocache !model.user?.twoFactorEmailOnly}
                 checked
               @{endif_nocache}
             >
@@ -117,7 +117,7 @@
               name="twoFactorType"
               id="twoFactorEmail"
               value="twoFactorEmail"
-              @{if_nocache model.twoFactorEmailOnly}
+              @{if_nocache model.user?.twoFactorEmailOnly}
                 checked
               @{endif_nocache}
             >
@@ -127,7 +127,7 @@
             </label>
           </div>
           
-          @{if_nocache !model.twoFactorEmailOnly}
+          @{if_nocache !model.user?.twoFactorEmailOnly}
             <hr/>
             
             <div class="my-3 text-danger text-center">
@@ -159,7 +159,7 @@
   </div>
 
   <script>
-    @{if_nocache !model.twoFactorEmailOnly && model.backupCodes}
+    @{if_nocache !model.user?.twoFactorEmailOnly && model.backupCodes}
       try {
         const backupCodesEl = document.getElementById('backupCodes');
         const backupCodes = JSON.parse(backupCodesEl.dataset.data);
@@ -237,7 +237,7 @@
         () => http.post(
           '/api/auth/request-password-reset',
           {
-            email: "@{model.email}",
+            email: "@{model.user?.email}",
             redirectTo: "/password-reset",
           },
           (data) => handleSuccess("@(#passwordChangeConfirmation)", true),

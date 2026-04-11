@@ -18,12 +18,12 @@ userRouter.get("/", async (req: Request, res: Response) => {
     const user = res.locals.user;
 
     let backupCodes: string[] = [];
+
     if (user.twoFactorEnabled && !user.twoFactorEmailOnly) {
       const b = await auth.api.viewBackupCodes({ body: { userId: user.id } });
       if (b.status) backupCodes = b.backupCodes;
     };
-    console.log(backupCodes);
-
+    
     return returnPage(res, 'layout_dashboard', 'user/user_settings',
     {
       props: {
@@ -31,12 +31,7 @@ userRouter.get("/", async (req: Request, res: Response) => {
         forceEnableTwoFa: process.env.BETTER_AUTH_FORCE_ENABLE_TWOFA,
       },
       model: {
-        name: user.name,
-        email: user.email,
-        twoFactorEnabled: user.twoFactorEnabled,
-        twoFactorEmailOnly: user.twoFactorEmailOnly,
-        backupCodes: parseDBObject(backupCodes) || "", //JSON.stringify(backupCodes),
-        isAdmin: user ? user.isAdmin : false,
+        backupCodes: parseDBObject(backupCodes) || "",
       },
     });
   }
@@ -48,18 +43,11 @@ userRouter.get("/", async (req: Request, res: Response) => {
 // User TwoFA enabling page (switch to app OTP)
 userRouter.get("/otp-enable", (req: Request, res: Response) => {
   try {
-    const user = res.locals.user;
-
     return returnPage(res, 'layout_cover', 'auth/auth_otp_enable',
     {
-      props: {
-        currentPage: 'login',
-        isAuth: true,
-        issuer: process.env.APP_NAME,
-      },
-      model: {
-        isAuthenticated: user?.isAuthenticated,
-      },
+      currentPage: 'login',
+      isAuth: true,
+      issuer: process.env.APP_NAME,
     });
   }
   catch(e) {
@@ -70,17 +58,10 @@ userRouter.get("/otp-enable", (req: Request, res: Response) => {
 // User TwoFA enabling (by email) page (switch to email OTP)
 userRouter.get("/otp-enable-email", (req: Request, res: Response) => {
   try {
-    const user = res.locals.user;
-
     return returnPage(res, 'layout_cover', 'auth/auth_otp_enable_email',
     {
-      props: {
-        currentPage: 'login',
-        isAuth: true,
-      },
-      model: {
-        isAuthenticated: user?.isAuthenticated,
-      },
+      currentPage: 'login',
+      isAuth: true,
     });
   }
   catch(e) {
@@ -91,17 +72,10 @@ userRouter.get("/otp-enable-email", (req: Request, res: Response) => {
 // User TwoFA generate codes page
 userRouter.get("/otp-codes-generate", (req: Request, res: Response) => {
   try {
-    const user = res.locals.user;
-
     return returnPage(res, 'layout_cover', 'auth/auth_otp_codes_generate',
     {
-      props: {
-        currentPage: 'login',
-        isAuth: true,
-      },
-      model: {
-        isAuthenticated: user?.isAuthenticated,
-      },
+      currentPage: 'login',
+      isAuth: true,
     });
   }
   catch(e) {

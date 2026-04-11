@@ -61,9 +61,9 @@ const getAuthMiddleware = async (req: Request, res: Response, next: NextFunction
       
       const isEmailVerified = isAuthenticated && user.emailVerified;
 
-      const isGoodBoy = isEmailVerified && !user.banned;
+      const isNotBanned = isEmailVerified && !user.banned;
 
-      const isApproved = isGoodBoy && (!process.env.BETTER_AUTH_FORCE_APPROVAL || user.approved);
+      const isApproved = isNotBanned && (!process.env.BETTER_AUTH_FORCE_APPROVAL || user.approved);
 
       const isTwoFactorEnabled = process.env.BETTER_AUTH_FORCE_ENABLE_TWOFA ?
         isApproved && user.twoFactorEnabled :
@@ -79,7 +79,7 @@ const getAuthMiddleware = async (req: Request, res: Response, next: NextFunction
         ...user,
         isAuthenticated: isAuthenticated,
         isEmailVerified: isEmailVerified,
-        isGoodBoy: isGoodBoy,
+        isNotBanned: isNotBanned,
         isApproved: isApproved,
         isTwoFactorEnabled: isTwoFactorEnabled,
         isTwoFactorEmailOnly: isTwoFactorEmailOnly,

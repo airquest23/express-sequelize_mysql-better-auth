@@ -9,13 +9,20 @@ const isProd = process.env.NODE_ENV === 'production';
 
 ////////////////////////////////////////////
 export function parseTemplate(filePath: string, options: any, m: any = {}) {
-  console.log(templateCache);
-
-  const props = m.props ? m.props : m;
-  const model = m.model ? m.model : null;
+  //console.log(templateCache);
 
   const language = options.language;
   const viewsDir = options.settings.views;
+  const props = m.props ? m.props : m;
+  let model;
+  if (m.model) {
+    model = {
+      ...options._locals,
+      ...m.model,
+    };
+  } else {
+    model = options._locals;
+  };
 
   //////////////////////
   // 1. Check cache first (production only)
@@ -198,8 +205,9 @@ export function parseTemplate(filePath: string, options: any, m: any = {}) {
   code = code
     .replace(/___ESC_TAG___/g     , '').replace(/\\@{/g  , '@{' )
     .replace(/___ESC_LANG_TAG___/g, '').replace(/\\@\(#/g, '@(#');
+  //console.log(model);
   //console.log(code);
-  
+
   //////////////////////
   // 13. Finalize (try render)
   try {

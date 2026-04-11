@@ -153,14 +153,15 @@ app.use(authRouter);
 
 const checkAuthMiddleWare = (req: Request, res: Response, next: NextFunction) => {
   try {
-    if(!res.locals.user || !res.locals.user?.isAuthorized) {
+    const user = res.locals.user;
+    if(!user || !user.isAuthorized) {
       return handleError(
         new ErrorServer(
           sc['401-Unauthorized'].message + '.\n' +
           sc['401-Unauthorized'].description,
           sc['401-Unauthorized'].code
         ),
-        res
+        res,
       );
     }
     else { next(); };
@@ -176,14 +177,15 @@ app.use('/user', checkAuthMiddleWare, userRouter);
 app.use('/admin', checkAuthMiddleWare,
   (req: Request, res: Response, next: NextFunction) => {
     try {
-      if(!res.locals.user || res.locals.user?.role !== 'admin') {
+      const user = res.locals.user;
+      if(!user || !user.isAdmin) {
         return handleError(
           new ErrorServer(
             sc['401-Unauthorized'].message + '.\n' +
             sc['401-Unauthorized'].description,
             sc['401-Unauthorized'].code
           ),
-          res
+          res,
         );
       }
       else { next(); };
@@ -200,17 +202,8 @@ app.use('/admin', checkAuthMiddleWare,
 //////////////////////
 app.use((req: Request, res: Response) => {
   try {
-    const user = res.locals.user;
-    
     return returnPage(res, 'layout_cover', '404',
-    {
-      props: {
-        currentPage: 'login',
-      },
-      model: {
-        isAuthenticated: user?.isAuthenticated,
-      },
-    });
+    { currentPage: 'login' });
   }
   catch(e) {
     return handleError(e, res);
