@@ -63,7 +63,7 @@
         async (data) => {
           @{if !props.isAuth}
           http.get(
-            '/otp-enable-otp-only',
+            '/otp-enable-app-only',
             async (data) => {
           @{endif}
               await handleSuccess(data, true);

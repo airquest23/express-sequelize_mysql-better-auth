@@ -57,27 +57,34 @@ const getAuthMiddleware = async (req: Request, res: Response, next: NextFunction
       
       const isAuthenticated =
         user        != null && user        != undefined && isObject(user) &&
-        authSession != null && authSession != undefined && isObject(authSession) &&
-        (!process.env.BETTER_AUTH_FORCE_APPROVAL || user.isApproved) &&
-        !user.isBanned;
+        authSession != null && authSession != undefined && isObject(authSession);
       
       const isEmailVerified = isAuthenticated && user.emailVerified;
 
-      const isTwoFaEnabled = process.env.BETTER_AUTH_FORCE_ENABLE_TWOFA ?
-        isEmailVerified && user.twoFactorEnabled :
-        isEmailVerified;
+      const isGoodBoy = isEmailVerified && !user.banned;
+
+      const isApproved = isGoodBoy && (!process.env.BETTER_AUTH_FORCE_APPROVAL || user.approved);
+
+      const isTwoFactorEnabled = process.env.BETTER_AUTH_FORCE_ENABLE_TWOFA ?
+        isApproved && user.twoFactorEnabled :
+        isApproved;
       
-      const isTwoFaEmailOnly = isEmailVerified && user.twoFactorEmailOnly;
+      const isTwoFactorEmailOnly = isTwoFactorEnabled && user.twoFactorEmailOnly;
       
-      const isAuthorized = isTwoFaEnabled;
+      const isAuthorized = isTwoFactorEnabled;
+
+      const isAdmin = isAuthorized && user.role === 'admin';
 
       res.locals.user = {
         ...user,
         isAuthenticated: isAuthenticated,
         isEmailVerified: isEmailVerified,
-        isTwoFaEnabled: isTwoFaEnabled,
-        isTwoFaEmailOnly: isTwoFaEmailOnly,
+        isGoodBoy: isGoodBoy,
+        isApproved: isApproved,
+        isTwoFactorEnabled: isTwoFactorEnabled,
+        isTwoFactorEmailOnly: isTwoFactorEmailOnly,
         isAuthorized: isAuthorized,
+        isAdmin: isAdmin,
       };
 
       res.locals.session = authSession;

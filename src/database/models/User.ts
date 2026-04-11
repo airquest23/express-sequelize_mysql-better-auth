@@ -15,8 +15,8 @@ export class User extends Model {
   declare twoFactorEnabled?: boolean;
   declare twoFactorEmailOnly?: boolean;
   declare role?: Role;
-  declare isBanned?: boolean;
-  declare isApproved: boolean;
+  declare banned?: boolean;
+  declare approved: boolean;
 };
 
 User.init({
@@ -52,10 +52,10 @@ User.init({
     values: ["user", "admin"],
     defaultValue: "user",
   },
-  isBanned: {
+  banned: {
     type: DataTypes.BOOLEAN,
   },
-  isApproved: {
+  approved: {
     type: DataTypes.BOOLEAN,
     //allowNull: false,
     //defaultValue: process.env.BETTER_AUTH_FORCE_APPROVAL ? false : true,

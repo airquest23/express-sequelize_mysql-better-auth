@@ -50,7 +50,7 @@ adminRouter.get("/", async (req: Request, res: Response) => {
     if (messages.length < limit) {
       lastLine = z.number().min(0).parse(messages.length);
     };
-
+    
     return returnPage(res, 'layout_dashboard', 'admin/messages_list',
     {
       props: {
@@ -62,7 +62,7 @@ adminRouter.get("/", async (req: Request, res: Response) => {
         page: page,
         lastLine: lastLine,
         count: messages.length,
-        isAdmin: res.locals.user ? res.locals.user.role === 'admin' : false,
+        isAdmin: res.locals.user ? res.locals.user.isAdmin : false,
       },
     });
   }

@@ -190,7 +190,7 @@ richTextsRouter.get('/', async (req: Request, res: Response) => {
         page: page,
         lastLine: lastLine,
         count: plainTexts.length,
-        isAdmin: res.locals.user ? res.locals.user.role === 'admin' : false,
+        isAdmin: res.locals.user ? res.locals.user.isAdmin : false,
       },
     });
   }
@@ -212,7 +212,7 @@ richTextsRouter.get('/new', (req: Request, res: Response) => {
         isEdit: false,
       },
       model: {
-        isAdmin: res.locals.user ? res.locals.user.role === 'admin' : false,
+        isAdmin: res.locals.user ? res.locals.user.isAdmin : false,
       },
     });
   }
@@ -246,7 +246,7 @@ richTextsRouter.get('/edit/:id', async (req: Request, res: Response) => {
         content: parseDBObject(text?.content) || "" /*text && text.content ?
           process.env.NODE_ENV === 'production' ? text.content : JSON.stringify(text.content)
           : ""*/,
-        isAdmin: res.locals.user ? res.locals.user.role === 'admin' : false,
+        isAdmin: res.locals.user ? res.locals.user.isAdmin : false,
       },
     });
   } catch(e) {

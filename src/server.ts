@@ -208,7 +208,7 @@ app.use((req: Request, res: Response) => {
         currentPage: 'login',
       },
       model: {
-        isLoggedIn: user ? true : false,
+        isAuthenticated: user?.isAuthenticated,
       },
     });
   }

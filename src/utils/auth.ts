@@ -3,9 +3,11 @@ import { isAPIError } from "better-auth/api";
 import { twoFactor } from "better-auth/plugins";
 import { createAuthMiddleware } from "better-auth/api";
 import { createPool } from "mysql2/promise";
+import { v4 as uuidv4 } from 'uuid';
 import logger from "./logger";
 import { sendEmail } from "../utils/email/helpers";
 import { BASE_ERROR_CODES_FR } from "../ressources/better-auth-errors";
+import { AdminMessage } from "../database/models/AdminMessage";
 
 export const auth = betterAuth({
   baseURL: process.env.APP_URL_1,
@@ -112,7 +114,7 @@ export const auth = betterAuth({
 	user: {
 		changeEmail: {
 			enabled: true,
-			sendChangeEmailConfirmation: async ({ user, newEmail, url, token }, request) => { 
+			sendChangeEmailConfirmation: async ({ user, newEmail, url, token }, request) => {
 				void sendEmail({
 					to: '"' + user.name + '" <' + user.email + '>',
 					subject: 'Approve email change',
@@ -127,8 +129,8 @@ export const auth = betterAuth({
 							</a>
 						</p>
 					`,
-				})
-			}
+				});
+			},
 		},
 		additionalFields: {
 			twoFactorEmailOnly: {
@@ -143,13 +145,13 @@ export const auth = betterAuth({
         defaultValue: "user",
         input: false,
       },
-			isBanned: {
+			banned: {
 				type: "boolean",
         required: false,
         defaultValue: false,
 				input: false,
 			},
-			isApproved: {
+			approved: {
 				type: "boolean",
         required: false, //true,
 				defaultValue: false,
@@ -174,29 +176,6 @@ export const auth = betterAuth({
 		},
 		cookiePrefix: process.env.APP_NAME,
 	},
-	hooks: {
-		before: createAuthMiddleware(async (ctx) => {
-			// Execute before processing the request
-			logger.debug("------------- [Auth Hooks] BEFORE starts -------------");
-			logger.debug("Request path: " + ctx.path);
-			logger.debug("Request body:", ctx.body || { body: null });
-			logger.debug("------------- [Auth Hooks] BEFORE ends -------------");
-		}),
-		after: createAuthMiddleware(async (ctx) => {
-			// Execute after processing the request
-			logger.debug("------------- [Auth Hooks] AFTER starts -------------");
-			logger.debug("Response:", ctx.context.returned || { response: null });
-			logger.debug("------------- [Auth Hooks] AFTER ends -------------");
-			
-			const error = ctx.context.returned;
-			if (isAPIError(error)) {
-				throw new APIError(
-					// @ts-ignore
-					error.status, { ...error.body, message: [BASE_ERROR_CODES_FR[error.body?.code], error.message] }
-				);
-			};
-		}),
-	},
 	logger: {
 		disabled: false,
 		disableColors: false,
@@ -211,5 +190,56 @@ export const auth = betterAuth({
 			else if (level === "debug")
 				logger.debug(`[${level}] ${message}`, ...args);
 		},
+	},
+	hooks: {
+		before: createAuthMiddleware(async (ctx) => {
+			// Execute before processing the request
+			logger.debug("------------- [Auth Hooks] BEFORE starts -------------");
+			logger.debug("Request path: " + ctx.path);
+			logger.debug("Request body:", ctx.body || { body: null });
+			logger.debug("------------- [Auth Hooks] BEFORE ends -------------");
+		}),
+		after: createAuthMiddleware(async (ctx) => {
+			// Execute after processing the request
+			logger.debug("------------- [Auth Hooks] AFTER starts -------------");
+			logger.debug("Response:", ctx.context.returned || { response: null });
+			logger.debug("------------- [Auth Hooks] AFTER ends -------------");
+			
+			if (ctx.path === '/sign-up/email' && process.env.BETTER_AUTH_FORCE_APPROVAL) {
+				try {
+					const insert = await AdminMessage.upsert({
+						id: uuidv4(),
+						from: '"' + ctx.body.name + '" <' + ctx.body.email + '>',
+						message: "New subscription approval!",
+					});
+
+					void sendEmail({
+						to: '"' + ctx.body.name + '" <' + ctx.body.email + '>',
+						subject: 'Approval',
+						text: `You need to be approved, you will be contacted soon.\nThanks for your subscription.`,
+						html: `
+							<p style="margin-top: 5px; margin-bottom: 5px;">
+								You need to be approved, you will be contacted soon.
+							</p>
+							<p>
+								Thanks for your subscription.
+							</p>
+						`,
+					});
+				}
+				catch(e) {
+					throw e;
+				};
+			};
+
+			const error = ctx.context.returned;
+
+			if (isAPIError(error)) {
+				throw new APIError(
+					// @ts-ignore
+					error.status, { ...error.body, message: [BASE_ERROR_CODES_FR[error.body?.code], error.message] }
+				);
+			};
+		}),
 	},
 });

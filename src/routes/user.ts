@@ -36,7 +36,7 @@ userRouter.get("/", async (req: Request, res: Response) => {
         twoFactorEnabled: user.twoFactorEnabled,
         twoFactorEmailOnly: user.twoFactorEmailOnly,
         backupCodes: parseDBObject(backupCodes) || "", //JSON.stringify(backupCodes),
-        isAdmin: user ? user.role === 'admin' : false,
+        isAdmin: user ? user.isAdmin : false,
       },
     });
   }
@@ -58,7 +58,7 @@ userRouter.get("/otp-enable", (req: Request, res: Response) => {
         issuer: process.env.APP_NAME,
       },
       model: {
-        isLoggedIn: user ? true : false,
+        isAuthenticated: user?.isAuthenticated,
       },
     });
   }
@@ -79,7 +79,7 @@ userRouter.get("/otp-enable-email", (req: Request, res: Response) => {
         isAuth: true,
       },
       model: {
-        isLoggedIn: user ? true : false,
+        isAuthenticated: user?.isAuthenticated,
       },
     });
   }
@@ -100,7 +100,7 @@ userRouter.get("/otp-codes-generate", (req: Request, res: Response) => {
         isAuth: true,
       },
       model: {
-        isLoggedIn: user ? true : false,
+        isAuthenticated: user?.isAuthenticated,
       },
     });
   }

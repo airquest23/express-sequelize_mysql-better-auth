@@ -17,6 +17,14 @@ export const ressources: { [key: string]: string[] } = {
     'Mot de passe manquant ou invalide (min. 8 caractères; max. 40)',
     'Password missing or malformed (min. 8 chars; max. 40)'
   ],
+  errorApproval: [
+    'Vous devez être approuvé ; merci de consulter votre messagerie ou contactez-nous par email !',
+    'You need to be approved ; please check your inbox or contact-us by email !'
+  ],
+  errorBanned: [
+    'Vous avez été banni, demandez-vous pourquoi :-) !',
+    'You have been banned, ask yourself why :-) !'
+  ],
   errorOtp: [
     'Code à 6 chiffres manquant ou invalide (min./max. 6 chiffres)',
     'One-time password missing or malformed (min./max. 6 numbers)'

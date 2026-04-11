@@ -30,7 +30,7 @@ authRouter.get("/", (req: Request, res: Response) => {
           currentPage: 'home'
         },
         model: {
-          isAdmin: user ? user.role === 'admin' : false
+          isAdmin: user ? user.isAdmin : false
         },
       });
     
@@ -42,7 +42,7 @@ authRouter.get("/", (req: Request, res: Response) => {
           currentPage: 'home',
         },
         model: {
-          isLoggedIn: user ? true : false,
+          isAuthenticated: user?.isAuthenticated,
         },
       });
   }
@@ -67,7 +67,7 @@ authRouter.get("/signup", (req: Request, res: Response) => {
           currentPage: 'signup',
         },
         model: {
-          isLoggedIn: user ? true : false,
+          isAuthenticated: user?.isAuthenticated,
         },
       });
   }
@@ -86,13 +86,19 @@ authRouter.get("/login", (req: Request, res: Response) => {
       if (!user?.isEmailVerified)
         return returnRedirect(res, "/email-verification");
 
-      else if (process.env.BETTER_AUTH_FORCE_ENABLE_TWOFA && !user?.isTwoFaEnabled)
+      else if (!user?.isGoodBoy)
+        return returnRedirect(res, "/banned");
+
+      else if (!user?.isApproved)
+        return returnRedirect(res, "/approval");
+
+      else if (!user?.isTwoFactorEnabled)
         return returnRedirect(res, "/otp-enable");
 
       else
         return returnRedirect(res, "/");
     }
-
+    
     else
       return returnPage(res, 'layout_cover', 'auth/auth_login',
       {
@@ -100,7 +106,7 @@ authRouter.get("/login", (req: Request, res: Response) => {
           currentPage: 'login',
         },
         model: {
-          isLoggedIn: user ? true : false,
+          isAuthenticated: user?.isAuthenticated,
         },
       });
   }
@@ -113,13 +119,15 @@ authRouter.get("/login", (req: Request, res: Response) => {
 // Forgot password page
 authRouter.get("/password-forgot", (req: Request, res: Response) => {
   try {
+    const user = res.locals.user;
+
     return returnPage(res, 'layout_cover', 'auth/auth_password_forgot',
     {
       props: {
         currentPage: 'login',
       },
       model: {
-        isLoggedIn: res.locals.user ? true : false,
+        isAuthenticated: user?.isAuthenticated,
       },
     });
   }
@@ -131,6 +139,7 @@ authRouter.get("/password-forgot", (req: Request, res: Response) => {
 // Reset password page
 authRouter.get("/password-reset", (req: Request, res: Response) => {
   try {
+    const user = res.locals.user;
     const token = escapeHTML(z.string().nonempty().parse(req.query.token));
     
     return returnPage(res, 'layout_cover', 'auth/auth_password_reset',
@@ -139,27 +148,8 @@ authRouter.get("/password-reset", (req: Request, res: Response) => {
         currentPage: 'login',
       },
       model: {
-        isLoggedIn: res.locals.user ? true : false,
+        isAuthenticated: user?.isAuthenticated,
         token: token || "",
-      },
-    });
-  }
-  catch(e) {
-    return handleError(e, res);
-  };
-});
-
-/////////////////////////////////////
-// Reset email page
-authRouter.get("/email-reset", (req: Request, res: Response) => {
-  try {
-    return returnPage(res, 'layout_cover', 'auth/auth_email_reset',
-    {
-      props: {
-        currentPage: 'login',
-      },
-      model: {
-        isLoggedIn: res.locals.user ? true : false,
       },
     });
   }
@@ -180,8 +170,29 @@ authRouter.get("/email-verification", (req: Request, res: Response) => {
         currentPage: 'login',
       },
       model: {
-        isLoggedIn: user ? true : false,
+        isAuthenticated: user?.isAuthenticated,
         isEmailVerified: user?.isEmailVerified,
+      },
+    });
+  }
+  catch(e) {
+    return handleError(e, res);
+  };
+});
+
+// Email verified page (confirmation)
+authRouter.get("/email-verified", (req: Request, res: Response) => {
+  try {
+    const user = res.locals.user;
+
+    return returnPage(res, 'layout_cover', 'auth/auth_email_verification',
+    {
+      props: {
+        currentPage: 'login',
+      },
+      model: {
+        isAuthenticated: user?.isAuthenticated,
+        isEmailVerified: true,
       },
     });
   }
@@ -205,7 +216,7 @@ authRouter.get("/email-verification-resend", (req: Request, res: Response) => {
           currentPage: 'login',
         },
         model: {
-          isLoggedIn: user ? true : false,
+          isAuthenticated: user?.isAuthenticated,
         },
       });
   }
@@ -215,45 +226,22 @@ authRouter.get("/email-verification-resend", (req: Request, res: Response) => {
 });
 
 /////////////////////////////////////
-// Email verification page
-authRouter.get("/email-verified", (req: Request, res: Response) => {
+// Reset email page
+authRouter.get("/email-reset", (req: Request, res: Response) => {
   try {
     const user = res.locals.user;
-
-    return returnPage(res, 'layout_cover', 'auth/auth_email_verification',
-    {
-      props: {
-        currentPage: 'login',
-      },
-      model: {
-        isLoggedIn: user ? true : false,
-        isEmailVerified: true,
-      },
-    });
-  }
-  catch(e) {
-    return handleError(e, res);
-  };
-});
-
-/////////////////////////////////////
-// TwoFA disabling page
-authRouter.get("/otp-disable", (req: Request, res: Response) => {
-  try {
-    const user = res.locals.user;
-
-    if (!user?.twoFactorEnabled && !user?.isAuthorized)
+    
+    if (!user?.isAuthorized)
       return returnRedirect(res, "/");
-
+    
     else
-      return returnPage(res, 'layout_cover', 'auth/auth_otp_disable',
+      return returnPage(res, 'layout_cover', 'auth/auth_email_reset',
       {
         props: {
           currentPage: 'login',
-          issuer: process.env.APP_NAME,
         },
         model: {
-          isLoggedIn: user ? true : false,
+          isAuthenticated: user?.isAuthenticated,
         },
       });
   }
@@ -262,6 +250,57 @@ authRouter.get("/otp-disable", (req: Request, res: Response) => {
   };
 });
 
+/////////////////////////////////////
+// Approval page
+authRouter.get("/approval", (req: Request, res: Response) => {
+  try {
+    const user = res.locals.user;
+    
+    if (!user?.isAuthenticated)
+      return returnRedirect(res, "/");
+
+    else
+      return returnPage(res, 'layout_cover', 'auth/auth_approval',
+      {
+        props: {
+          currentPage: 'login',
+        },
+        model: {
+          isAuthenticated: user?.isAuthenticated,
+        },
+      });
+  }
+  catch(e) {
+    return handleError(e, res);
+  };
+});
+
+/////////////////////////////////////
+// Banned page
+authRouter.get("/banned", (req: Request, res: Response) => {
+  try {
+    const user = res.locals.user;
+    
+    if (!user?.banned)
+      return returnRedirect(res, "/");
+
+    else
+      return returnPage(res, 'layout_cover', 'auth/auth_banned',
+      {
+        props: {
+          currentPage: 'login',
+        },
+        model: {
+          isAuthenticated: user?.isAuthenticated,
+        },
+      });
+  }
+  catch(e) {
+    return handleError(e, res);
+  };
+});
+
+/////////////////////////////////////
 // TwoFA enabling page
 authRouter.get("/otp-enable", (req: Request, res: Response) => {
   try {
@@ -278,7 +317,7 @@ authRouter.get("/otp-enable", (req: Request, res: Response) => {
           issuer: process.env.APP_NAME,
         },
         model: {
-          isLoggedIn: user ? true : false,
+          isAuthenticated: user?.isAuthenticated,
         },
       });
   }
@@ -302,7 +341,7 @@ authRouter.get("/otp-enable-verify", (req: Request, res: Response) => {
           currentPage: 'login',
         },
         model: {
-          isLoggedIn: user ? true : false,
+          isAuthenticated: user?.isAuthenticated,
         },
       });
   }
@@ -326,7 +365,7 @@ authRouter.get("/otp-enable-email", (req: Request, res: Response) => {
           currentPage: 'login',
         },
         model: {
-          isLoggedIn: user ? true : false,
+          isAuthenticated: user?.isAuthenticated,
         },
       });
   }
@@ -350,7 +389,32 @@ authRouter.get("/otp-enable-email-verify", (req: Request, res: Response) => {
           currentPage: 'login',
         },
         model: {
-          isLoggedIn: user ? true : false,
+          isAuthenticated: user?.isAuthenticated,
+        },
+      });
+  }
+  catch(e) {
+    return handleError(e, res);
+  };
+});
+
+// TwoFA disabling page
+authRouter.get("/otp-disable", (req: Request, res: Response) => {
+  try {
+    const user = res.locals.user;
+
+    if (!user?.twoFactorEnabled && !user?.isAuthorized)
+      return returnRedirect(res, "/");
+
+    else
+      return returnPage(res, 'layout_cover', 'auth/auth_otp_disable',
+      {
+        props: {
+          currentPage: 'login',
+          issuer: process.env.APP_NAME,
+        },
+        model: {
+          isAuthenticated: user?.isAuthenticated,
         },
       });
   }
@@ -375,7 +439,7 @@ authRouter.get("/otp-verify", (req: Request, res: Response) => {
           currentPage: 'login',
         },
         model: {
-          isLoggedIn: user ? true : false,
+          isAuthenticated: user?.isAuthenticated,
         },
       });
   }
@@ -399,7 +463,7 @@ authRouter.get("/otp-verify-code", (req: Request, res: Response) => {
           currentPage: 'login',
         },
         model: {
-          isLoggedIn: user ? true : false,
+          isAuthenticated: user?.isAuthenticated,
         },
       });
   }
@@ -423,7 +487,7 @@ authRouter.get("/otp-verify-email", (req: Request, res: Response) => {
           currentPage: 'login',
         },
         model: {
-          isLoggedIn: user ? true : false,
+          isAuthenticated: user?.isAuthenticated,
         },
       });
   }
@@ -448,7 +512,7 @@ authRouter.get("/otp-verify-email-only", (req: Request, res: Response) => {
           hideOTPLink: true,
         },
         model: {
-          isLoggedIn: user ? true : false,
+          isAuthenticated: user?.isAuthenticated,
         },
       });
   }
@@ -461,7 +525,7 @@ authRouter.get("/otp-verify-email-only", (req: Request, res: Response) => {
 /////////////////////////////////////
 /////////////////////////////////////
 // TwoFA enabling (by OTP only) API
-authRouter.get("/otp-enable-otp-only", async (req: Request, res: Response) => {
+authRouter.get("/otp-enable-app-only", async (req: Request, res: Response) => {
   try {
     const user = res.locals.user;
 
@@ -576,7 +640,7 @@ authRouter.get("/contact-us", (req: Request, res: Response) => {
         currentPage: 'login',
       },
       model: {
-        isLoggedIn: user ? true : false,
+        isAuthenticated: user?.isAuthenticated,
       },
     });
   }

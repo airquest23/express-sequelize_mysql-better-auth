@@ -173,7 +173,7 @@ textsRouter.get("/", async (req: Request, res: Response) => {
         page: page,
         lastLine: lastLine,
         count: texts.length,
-        isAdmin: res.locals.user ? res.locals.user.role === 'admin' : false,
+        isAdmin: res.locals.user ? res.locals.user.isAdmin : false,
       },
     });
   }
@@ -195,7 +195,7 @@ textsRouter.get("/new", (req: Request, res: Response) => {
         isEdit: false,
       },
       model: {
-        isAdmin: res.locals.user ? res.locals.user.role === 'admin' : false,
+        isAdmin: res.locals.user ? res.locals.user.isAdmin : false,
       },
     });
   }
@@ -227,7 +227,7 @@ textsRouter.get("/edit/:id", async (req: Request, res: Response) => {
       model: {
         id: text?.id || "",
         content: text?.content || "",
-        isAdmin: res.locals.user ? res.locals.user.role === 'admin' : false,
+        isAdmin: res.locals.user ? res.locals.user.isAdmin : false,
       },
     });
   } catch(e) {
