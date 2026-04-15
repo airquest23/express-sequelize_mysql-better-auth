@@ -969,9 +969,8 @@ class DOMBuilder {
   /**
   * Stores nodes in the nodes array with querySelectorAll
   * @param {String} selector - Selector
-  * @param {null|HTMLElement|String} scope - Null | a node to define as the scope | or a stored node ID.
-	* (If null, takes the current node; if a string is provided - unless it is 'doc' or 'document' -, looks for a stored node;
-  * so you can enter 'doc' or 'document' to scope on the whole document).
+  * @param {null|HTMLElement|String} scope - Null | a node to define as the scope | 'this' to scope on the current node / or another string as a stored node ID.
+	* (If null, queries the whole 'document'; you can enter 'this' to query the current node; if another string is provided (other than 'this'), it looks for a stored node with the string as the node ID).
   * @sets The nodes array = the queried nodes (the current node is not affected)
   * @returns {this} The current class instance
   */
@@ -979,7 +978,7 @@ class DOMBuilder {
 		this.#queryHelper(scope, (e) => { this.nodes = e.querySelectorAll(selector); });
     return this;
   };
-
+  
   /**
   * Same as 'queryAll' (stores nodes in the nodes array with querySelectorAll), but with the current node as the scope
   * @param {String} selector - Selector

@@ -12,6 +12,39 @@ const getPreferredLanguage = (acceptLanguageHeader : string) => {
 
 const langCookie = `__Secure-${process.env.APP_NAME}.language`;
 
+export const getLanguageFromRequest = (req: Request | undefined, res: Response | null = null) => {
+  if (!req) return 1;
+  
+  let lang = '';
+
+  // 1st check the query (?language=...)
+  if (res && req.query.language) {
+    lang = req.query.language.toString();
+    res.cookie(langCookie, lang, {
+      maxAge: 86400,
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: true,
+      //signed: true,
+    });
+  }
+  
+  // 2nd check the cookie (langCookie=...)
+  else if (req.cookies && req.cookies[langCookie] && isString(req.cookies[langCookie])) {
+    lang = req.cookies[langCookie];
+  }
+  
+  // 3rd check the req header (accept-language=...)
+  else {
+    const acceptLanguageHeader = req.headers['accept-language'];
+    if (acceptLanguageHeader)
+      lang = getPreferredLanguage(acceptLanguageHeader).split('-')[0];
+  };
+  
+  const applyLang = getLang(lang);
+  return !isNaN(applyLang) ? applyLang : 1;
+};
+
 /////////////////////////////////////
 // Language socket middleware
 /*export const getLanguageSocketMiddleware = async (
@@ -19,26 +52,26 @@ const langCookie = `__Secure-${process.env.APP_NAME}.language`;
   next: (err?: ExtendedError | undefined) => void 
 ) => {
   try {
-    let lang = '';
+    // let lang = '';
     
     // Check the cookie (langCookie=...)
-    if (
-      socket.request.cookies &&
-      socket.request.cookies[langCookie] &&
-      isString(socket.request.cookies[langCookie])
-    ) {
-      lang = socket.request.cookies[langCookie];
-    }
+    // if (
+    //   socket.request.cookies &&
+    //   socket.request.cookies[langCookie] &&
+    //   isString(socket.request.cookies[langCookie])
+    // ) {
+    //   lang = socket.request.cookies[langCookie];
+    // }
     
     // Check the req header (accept-language=...)
-    else {
-      const acceptLanguageHeader = socket.request.headers['accept-language'];
-      if (acceptLanguageHeader)
-        lang = getPreferredLanguage(acceptLanguageHeader).split('-')[0];
-    };
+    // else {
+    //   const acceptLanguageHeader = socket.request.headers['accept-language'];
+    //   if (acceptLanguageHeader)
+    //     lang = getPreferredLanguage(acceptLanguageHeader).split('-')[0];
+    // };
     
-    const applyLang = getLang(lang);
-    socket.data.language = !isNaN(applyLang) ? applyLang : 1;
+    // const applyLang = getLang(lang);
+    socket.data.language = getLanguageFromRequest(socket.request); //!isNaN(applyLang) ? applyLang : 1;
     next();
   }
   catch(e) {
@@ -73,7 +106,7 @@ const getLanguageMiddleware = (req: Request, res: Response, next: NextFunction) 
     logger.debug("------------- [Lang middleware] REQ headers -------------");
     logger.http("ReqHeaders:", req.headers || { headers: null });
 
-    let lang = '';
+    /*let lang = '';
 
     // 1st check the query (?language=...)
     if (req.query.language) {
@@ -99,8 +132,8 @@ const getLanguageMiddleware = (req: Request, res: Response, next: NextFunction) 
         lang = getPreferredLanguage(acceptLanguageHeader).split('-')[0];
     };
     
-    const applyLang = getLang(lang);
-    res.locals.language = !isNaN(applyLang) ? applyLang : 1;
+    const applyLang = getLang(lang);*/
+    res.locals.language = getLanguageFromRequest(req, res); //!isNaN(applyLang) ? applyLang : 1;
     next();
   }
   catch(e) {

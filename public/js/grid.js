@@ -87,6 +87,7 @@
 * @property {String} table - Table ID (<table>)
 * @property {Object[]} data - Array of objects
 * @property {String} uuidProp - Data property name containing the row Uuid
+* @property {String} storageId - Storage ID
 * @property {Column[]} columns - Array of column objects (id / name)
 * @property {Boolean|KeyNav} keyNav - Enable key navigation or KeyNav configuration object
 * @property {String} hideId - Hide dropdown Ul ID
@@ -102,14 +103,21 @@ const CLASS_TABLE_ACTIVE = 'table-active';
 const CLASS_TABLE_SELECTED = 'table-primary';
 const CLASS_LIST_ACTIVE = 'list-active';
 const CLASS_LIST_SELECTED = 'active';
+
 const DEFAULT_PAGE_LIMIT = 100;
 const DEFAULT_NR_OF_COLS = 3;
 const DEFAULT_RESIZE_COLS_INCREMENT = 5;
+
 const MILLISECONDS_FOR_TRANSITIONS = '650';
 const ENUM_MODE = {
   single: 'single',
   mutiple: 'multiple',
 };
+
+const KEY_GRID_MODE = 'gridMode';
+const KEY_DISPLAYED_COLUMNS = 'displayedColumns';
+const KEY_COLUMNS_SIZES = 'columnsSizes';
+const KEY_COLUMNS_ORDER = 'columnsOrder';
 
 /////////////////////////////////////////
 /////////////////////////////////////////
@@ -144,6 +152,10 @@ class Grid {
   /** @type {String} Selected className */
   #classTableSelected = CLASS_TABLE_SELECTED;
 
+  /** @type {Number} Default limit per page */
+  #defaultPageLimit = DEFAULT_PAGE_LIMIT;
+  /** @type {Number} Default nr. of columns */
+  #defaultNrOfCols = DEFAULT_NR_OF_COLS;
   /** @type {Number} Resize columns increment */
   #resizeColsIncrement = DEFAULT_RESIZE_COLS_INCREMENT;
   
@@ -156,6 +168,16 @@ class Grid {
   * @param {GridParams} params - Grid parameters
   */
   constructor(params) {
+    /////////////////////////////////////////
+    // Storage prefix
+    let appPrefix = window.appName ? window.appName + '-' : '';
+    let instancePrefix = params.storageId ? params.storageId + '.' : '';
+
+    /** @type {String} - Storage ID */
+    this.storageId = appPrefix + instancePrefix;
+
+    /////////////////////////////////////////
+    // Set Grid props
     if(params.table)
       /** @type {String} - Table ID (<table>) */
       this.table = params.table;
@@ -163,18 +185,66 @@ class Grid {
     if(params.data)
       /** @type {Object[]} - Array of objects */
       this.data = params.data;
+    else
+      this.data = [];
     
-    /** @type {String} - Data property name containing the row Uuid */
-    this.uuidProp = params.uuidProp;
     this.#dataLengthBeforePagination = this.data.length;
 
+    /** @type {String} - Data property name containing the row Uuid */
+    this.uuidProp = params.uuidProp;
+    
     if(params.columns) {
       /** @type {Column[]} - Array of column objects */
       this.columns = params.columns;
-      //this.columns.forEach(column => this.#columnsState.push(column));
       for (let i = 0, l = this.columns.length; i < l; i++) {
         this.columns[i].order = i;
       };
+
+      if (this.#getStorageValue(KEY_DISPLAYED_COLUMNS)) {
+        let displayedColumnsArray;
+        try {
+          displayedColumnsArray = JSON.parse(this.#getStorageValue(KEY_DISPLAYED_COLUMNS));
+        } catch {
+          console.error("Error parsing local storage value (KEY_DISPLAYED_COLUMNS)!");
+        };
+        if (Array.isArray(displayedColumnsArray)) {
+          for (let i = 0, l = this.columns.length; i < l; i++) {
+            if (displayedColumnsArray.includes(this.columns[i].id))
+              this.columns[i].isHidden = false;
+            else
+              this.columns[i].isHidden = true;
+          };
+        };
+      };
+      if (this.#getStorageValue(KEY_COLUMNS_SIZES)) {
+        let columnsSizesArray;
+        try {
+          columnsSizesArray = JSON.parse(this.#getStorageValue(KEY_COLUMNS_SIZES));
+        } catch {
+          console.error("Error parsing local storage value (KEY_COLUMNS_SIZES)!");
+        };
+        if (Array.isArray(columnsSizesArray)) {
+          columnsSizesArray.forEach(col => {
+            const colObj = this.columns.find(v => v.id === col.id);
+            colObj.width = Number(col.width);
+          });
+        };
+      };
+      if (this.#getStorageValue(KEY_COLUMNS_ORDER)) {
+        let columnOrderArray;
+        try {
+          columnOrderArray = JSON.parse(this.#getStorageValue(KEY_COLUMNS_ORDER));
+        } catch {
+          console.error("Error parsing local storage value (KEY_COLUMNS_ORDER)!");
+        };
+        if (Array.isArray(columnOrderArray)) {
+          columnOrderArray.forEach(col => {
+            const colObj = this.columns.find(v => v.id === col.id);
+            colObj.order = Number(col.order);
+          });
+        };
+      };
+      
       this.#setDisplayedColumns();
     };
     
@@ -212,13 +282,13 @@ class Grid {
       this.pagination = {
         ...params.pagination,
         page: params.pagination.page || 1,
-        limitPerPage: params.pagination.limitPerPage || DEFAULT_PAGE_LIMIT,
+        limitPerPage: params.pagination.limitPerPage || this.#defaultPageLimit,
       };
       this.#addPagination();
     } else {
       this.pagination = {
         page: 1,
-        limitPerPage: DEFAULT_PAGE_LIMIT,
+        limitPerPage: this.#defaultPageLimit,
       };
     };
 
@@ -252,7 +322,7 @@ class Grid {
       /** @type {ListView} - ListView configuration object */
       this.listView = {
         ...params.listView,
-        nrOfCols: params.listView.nrOfCols || DEFAULT_NR_OF_COLS,
+        nrOfCols: params.listView.nrOfCols || this.#defaultNrOfCols,
       };
       
       if (this.listView.sortId)
@@ -260,9 +330,15 @@ class Grid {
       
       if (this.listView.buttons)
         this.#addListViewEvents();
+
+      if (this.#getStorageValue(KEY_GRID_MODE) === 'list') {
+        this.listView.transition = false;
+        this.setModeList();
+        this.listView.transition = params.listView.transition;
+      };
     } else {
       this.listView = {
-        nrOfCols: DEFAULT_NR_OF_COLS,
+        nrOfCols: this.#defaultNrOfCols,
       };
     };
   };
@@ -271,6 +347,11 @@ class Grid {
   /////////////////////////////////////////
   /////////////////////////////////////////
   // Helpers
+  #getStorageValue = (key) => localStorage.getItem(this.storageId + key);
+  #setStorageValue = (key, val) => localStorage.setItem(this.storageId + key, val);
+  #removeStorageValue = (key) => localStorage.removeItem(this.storageId + key);
+
+  ////////////////
   #getRows() {
     if (this.#isListView) {
       const list = document.getElementById(this.listView.id);
@@ -289,9 +370,14 @@ class Grid {
     this.#displayedColumns = visible;
   };
 
-  ////////////////
+  /////////////////////////////////////////
+  /////////////////////////////////////////
+  /////////////////////////////////////////
+  // Grid mode
   setModeGrid() {
     this.#isListView = false;
+    this.#removeStorageValue(KEY_GRID_MODE);
+
     this.#classTableActive = CLASS_TABLE_ACTIVE;
     this.#classTableSelected = CLASS_TABLE_SELECTED;
 
@@ -300,20 +386,14 @@ class Grid {
       DOM(this.listView.id).toggle('d-none').html('');
 
       if (this.listView.nrOfColsContainer) {
-        document
-          .getElementById(this.listView.nrOfColsContainer)
-          .classList.toggle('d-none');
+        DOM(this.listView.nrOfColsContainer).toggle('d-none');
       };
 
       // Show table
-      document
-        .getElementById(this.listView.tableId)
-        .classList.toggle('d-none');
+      DOM(this.listView.tableId).toggle('d-none');
 
       if (this.resize) {
-        document
-          .getElementById(this.resize.buttonId)
-          .classList.toggle('d-none');
+        DOM(this.resize.buttonId).toggle('d-none');
       };
 
       // Buttons
@@ -325,7 +405,7 @@ class Grid {
     };
     
     if (this.listView.transition) {
-      const dom = DOM(list).toggle('disappearing').toggle('opacity-0');
+      const dom = DOM(this.listView.id).toggle('disappearing').toggle('opacity-0');
       setTimeout(() => {
         doTheJob();
         dom.toggle('disappearing').toggle('opacity-0');
@@ -338,34 +418,25 @@ class Grid {
   ////////////////
   setModeList() {
     this.#isListView = true;
+    this.#setStorageValue(KEY_GRID_MODE, 'list');
+
     this.#classTableActive = CLASS_LIST_ACTIVE;
     this.#classTableSelected = CLASS_LIST_SELECTED;
 
     const doTheJob = () => {
       // Reset table
-      document
-        .getElementById(this.listView.tableId)
-        .classList.toggle('d-none');
-
-      document
-        .getElementById(this.table)
-        .innerHTML = '';
+      DOM(this.listView.tableId).toggle('d-none');
+      DOM(this.table).html('');
 
       if (this.resize) {
-        document
-          .getElementById(this.resize.buttonId)
-          .classList.toggle('d-none');
+        DOM(this.resize.buttonId).toggle('d-none');
       };
 
       // Show list
-      document
-        .getElementById(this.listView.id)
-        .classList.toggle('d-none');
+      DOM(this.listView.id).toggle('d-none');
 
       if (this.listView.nrOfColsContainer) {
-        document
-          .getElementById(this.listView.nrOfColsContainer)
-          .classList.toggle('d-none');
+        DOM(this.listView.nrOfColsContainer).toggle('d-none');
       };
 
       // Buttons
@@ -595,32 +666,6 @@ class Grid {
     const rows = this.#getRows();
     rows.forEach(row => row.classList.remove(this.#classTableActive));
   };
-  
-  /////////////////////////////////////////
-  /////////////////////////////////////////
-  /////////////////////////////////////////
-  // Hide columns
-  #addHide() {
-    const hideDD = document.getElementById(this.hide);
-    
-    this.columns.forEach(column => {
-      if (column.doNotHide) return;
-
-      DOM.create('li').appendTo(hideDD)
-        .addChild('div').class('form-check ms-2')
-          .addChild('input').type('checkbox').class('form-check-input').id(`hide_col_${column.id}`)
-            .event('change', () => {
-              const idx = this.columns.findIndex(col => col.id === column.id);
-              this.columns[idx].isHidden = !this.columns[idx].isHidden;
-              this.#clearSizes();
-              this.#setDisplayedColumns();
-              this.renderTable();
-              if (this.listView.sortId)
-                this.#addSortForListView();
-            })
-          .add('label').class('form-check-label').for(`hide_col_${column.id}`).text(column.name);
-    });
-  };
 
   /////////////////////////////////////////
   /////////////////////////////////////////
@@ -673,7 +718,7 @@ class Grid {
 
     return newData;
   };
-  
+
   /////////////////////////////////////////
   /////////////////////////////////////////
   /////////////////////////////////////////
@@ -774,6 +819,66 @@ class Grid {
   /////////////////////////////////////////
   /////////////////////////////////////////
   /////////////////////////////////////////
+  // Hide columns
+  #addHide() {
+    const hideDD = document.getElementById(this.hide);
+    
+    this.columns.forEach(column => {
+      if (column.doNotHide) return;
+
+      DOM.create('li').appendTo(hideDD)
+        .addChild('div').class('form-check ms-2')
+          .addChild('input').type('checkbox').class('form-check-input').id(`hide_col_${column.id}`)
+            .condition(column.isHidden).checked()
+            .event('change', () => {
+              const idx = this.columns.findIndex(col => col.id === column.id);
+              this.columns[idx].isHidden = !this.columns[idx].isHidden;
+              this.#clearSizes();
+              this.#setDisplayedColumns();
+              this.renderTable();
+              if (this.listView.sortId)
+                this.#addSortForListView();
+              if (
+                Array.from(DOM(hideDD).queryAllOn('input').nodes)
+                  .filter(v => v.checked).length <= 0
+              ) {
+                this.#removeStorageValue(KEY_DISPLAYED_COLUMNS);
+              }
+              else {
+                this.#setStorageValue(KEY_DISPLAYED_COLUMNS, JSON.stringify(
+                  this.#displayedColumns.map(col => col.id)
+                ));
+              };
+            })
+          .add('label').class('form-check-label').for(`hide_col_${column.id}`).text(column.name);
+    });
+
+    // Reset button
+    DOM.create('li').appendTo(hideDD)
+      .addChild('div').class('w-100 d-flex justify-content-center')
+        .addChildSet('button', {
+          type: 'button',
+          class: 'btn',
+          ariaLabel: 'Reset',
+          html: `<i class="bi bi-x-octagon"></i>`,
+        })
+        .event('click', () => {
+          for (let i = 0, l = this.columns.length; i < l; i++) {
+            this.columns[i].isHidden = false;
+          };
+          
+          this.#setDisplayedColumns();
+          this.renderTable();
+          
+          this.#removeStorageValue(KEY_DISPLAYED_COLUMNS);
+          hideDD.innerHTML = '';
+          this.#addHide();
+        });
+  };
+  
+  /////////////////////////////////////////
+  /////////////////////////////////////////
+  /////////////////////////////////////////
   // Resize columns
   #addResize() {
     const modal = document.getElementById(this.resize.modalBodyId);
@@ -865,13 +970,13 @@ class Grid {
           .saveGlobal(store, 'btnRight');
       
       store.btnLeft.addEventListener('click', () => {
-        const newVal = Number(store.input.value) - DEFAULT_RESIZE_COLS_INCREMENT;
+        const newVal = Number(store.input.value) - this.#resizeColsIncrement;
         if (this.#handleResize(Number(newVal), store.input, ul, thead_cells) !== -1)
           store.input.value = newVal;
       });
 
       store.btnRight.addEventListener('click', () => {
-        const newVal = Number(store.input.value) + DEFAULT_RESIZE_COLS_INCREMENT;
+        const newVal = Number(store.input.value) + this.#resizeColsIncrement;
         if (this.#handleResize(Number(newVal), store.input, ul, thead_cells) !== -1)
           store.input.value = newVal;
       });
@@ -893,6 +998,15 @@ class Grid {
           this.renderTable();
           this.#setResizeModal(ul);
         });
+  };
+
+  ////////////////
+  #clearSizes() {
+    this.#removeStorageValue(KEY_COLUMNS_SIZES);
+
+    for (let i = 0, l = this.columns.length; i < l; i++) {
+      this.columns[i].width = undefined;
+    };
   };
 
   ////////////////
@@ -984,14 +1098,12 @@ class Grid {
       const colObj = this.columns.find(v => v.id === uuid);
       colObj.width = Number(newHeaderColsWidth[i]);
     };
-  };
 
-  #clearSizes() {
-    for (let i = 0, l = this.columns.length; i < l; i++) {
-      this.columns[i].width = undefined;
-    };
+    this.#setStorageValue(KEY_COLUMNS_SIZES, JSON.stringify(
+      this.columns.map(col => { return { id: col.id, width: col.width} })
+    ));
   };
-
+  
   /////////////////////////////////////////
   /////////////////////////////////////////
   /////////////////////////////////////////
@@ -1064,6 +1176,10 @@ class Grid {
               this.#setDisplayedColumns();
               this.renderTable();
               this.#setReorderModal(ul);
+
+              this.#setStorageValue(KEY_COLUMNS_ORDER, JSON.stringify(
+                this.columns.map(col => { return { id: col.id, order: col.order} })
+              ));
             })
 
             .addAfterSet('button', {
@@ -1101,6 +1217,10 @@ class Grid {
               this.#setDisplayedColumns();
               this.renderTable();
               this.#setReorderModal(ul);
+
+              this.#setStorageValue(KEY_COLUMNS_ORDER, JSON.stringify(
+                this.columns.map(col => { return { id: col.id, order: col.order} })
+              ));
             });
     };
 
@@ -1114,6 +1234,8 @@ class Grid {
           html: `<i class="bi bi-x-octagon"></i>`,
         })
         .event('click', () => {
+          this.#removeStorageValue(KEY_COLUMNS_ORDER);
+
           for (let i = 0, l = this.columns.length; i < l; i++) {
             this.columns[i].order = i;
           };
@@ -1165,8 +1287,8 @@ class Grid {
         document
           .getElementById(this.listView.resetBtnId)
           .addEventListener('click', () => {
-            this.listView.nrOfCols = DEFAULT_NR_OF_COLS;
-            nrOfCols.value = DEFAULT_NR_OF_COLS;
+            this.listView.nrOfCols = this.#defaultNrOfCols;
+            nrOfCols.value = this.#defaultNrOfCols;
             this.renderTable();
           });
       };
@@ -1198,8 +1320,8 @@ class Grid {
     if (this.pagination.resetBtnId) {
       const resetBtn = document.getElementById(this.pagination.resetBtnId);
       resetBtn.addEventListener('click', () => {
-        this.pagination.limitPerPage = DEFAULT_PAGE_LIMIT;
-        limitInput.value = DEFAULT_PAGE_LIMIT;
+        this.pagination.limitPerPage = this.#defaultPageLimit;
+        limitInput.value = this.#defaultPageLimit;
         this.pagination.page = 1;
         this.renderTable();
       });

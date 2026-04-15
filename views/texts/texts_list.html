@@ -388,6 +388,7 @@
     table: 'table',
     data: data,
     uuidProp: 'id',
+    storageId: "texts_grid",
     columns: [
       {
         id: 'content',
@@ -402,16 +403,34 @@
         name: "@(#modificationDate)"
       },
     ],
+    listView: {
+      id: 'listView',
+      tableId: 'tableContainer',
+      sortId: 'sortListView',
+      nrOfCols: 3,
+      nrOfColsId: 'nrOfCols',
+      nrOfColsContainer:
+        'nrOfColsContainer',
+      resetBtnId: 'resetCols',
+      buttons: {
+        gridMode: 'gridMode',
+        listMode: 'listMode',
+      },
+      transition: true,
+    },
     keyNav: {
       enterFn: editObjectWithEnterKey,
       deleteFn: deleteObjectWithDeleteKey,
     },
-    hideId: 'hideDD',
-    search: {
-      id: 'gridSearch',
-      cancel: 'cancelSearch',
+    selection: {
+      mode: 'multiple',
+      clearId: 'clearSelection',
+      selectAllId: 'selectAll',
+      fn: (selection) => {
+        selectedObject = selection;
+        console.log(selectedObject);
+      },
     },
-    sort: true,
     pagination: {
       page: @{model.page},
       limitPerPage: @{model.limit},
@@ -430,15 +449,12 @@
       totalLinesId: 'totalLines',
       resetBtnId: 'resetPagination',
     },
-    selection: {
-      mode: 'multiple',
-      clearId: 'clearSelection',
-      selectAllId: 'selectAll',
-      fn: (selection) => {
-        selectedObject = selection;
-        console.log(selectedObject);
-      },
+    search: {
+      id: 'gridSearch',
+      cancel: 'cancelSearch',
     },
+    sort: true,
+    hideId: 'hideDD',
     resize: {
       buttonId: 'resizeButton',
       modalId: 'resizeModal',
@@ -448,21 +464,6 @@
       buttonId: 'reorderButton',
       modalId: 'reorderModal',
       modalBodyId: 'reorderModalBody'
-    },
-    listView: {
-      id: 'listView',
-      tableId: 'tableContainer',
-      sortId: 'sortListView',
-      nrOfCols: 3,
-      nrOfColsId: 'nrOfCols',
-      nrOfColsContainer:
-        'nrOfColsContainer',
-      resetBtnId: 'resetCols',
-      buttons: {
-        gridMode: 'gridMode',
-        listMode: 'listMode',
-      },
-      transition: true,
     },
   }).renderTable();
   

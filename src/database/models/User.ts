@@ -10,12 +10,14 @@ export class User extends Model {
   declare id: string;
   declare name: string;
   declare email : string;
-  declare emailVerified: boolean;
   declare image?: string;
-  declare twoFactorEnabled?: boolean;
-  declare twoFactorEmailOnly?: boolean;
-  declare role?: Role;
-  declare banned?: boolean;
+  
+  declare role: Role;
+  
+  declare emailVerified: boolean;
+  declare twoFactorEnabled: boolean;
+  declare twoFactorEmailOnly: boolean;
+  declare banned: boolean;
   declare approved: boolean;
 };
 
@@ -34,31 +36,35 @@ User.init({
     allowNull: false,
     unique: true,
   },
-  emailVerified: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-  },
   image: {
     type: DataTypes.TEXT,
   },
-  twoFactorEnabled: {
-    type: DataTypes.BOOLEAN,
-  },
-  twoFactorEmailOnly: {
-    type: DataTypes.BOOLEAN,
-  },
+
   role: {
     type: DataTypes.ENUM(),
     values: ["user", "admin"],
     defaultValue: "user",
   },
-  banned: {
+
+  emailVerified: {
     type: DataTypes.BOOLEAN,
+    allowNull: false,
+  },
+  twoFactorEnabled: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+  },
+  twoFactorEmailOnly: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
   },
   approved: {
     type: DataTypes.BOOLEAN,
-    //allowNull: false,
-    //defaultValue: process.env.BETTER_AUTH_FORCE_APPROVAL ? false : true,
+    allowNull: false,
+  },
+  banned: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
   },
 },
 {

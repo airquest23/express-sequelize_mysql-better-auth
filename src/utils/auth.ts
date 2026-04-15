@@ -1,3 +1,4 @@
+import { Request } from "express";
 import { betterAuth, APIError } from "better-auth";
 import { isAPIError } from "better-auth/api";
 import { twoFactor } from "better-auth/plugins";
@@ -8,6 +9,8 @@ import logger from "./logger";
 import { sendEmail } from "../utils/email/helpers";
 import { BASE_ERROR_CODES_FR } from "../ressources/better-auth-errors";
 import { AdminMessage } from "../database/models/AdminMessage";
+import { EMAIL_CONTENTS } from "../ressources/better-auth-emails";
+import { getLanguageFromRequest } from "../middlewares/language";
 
 export const auth = betterAuth({
   baseURL: process.env.APP_URL_1,
@@ -17,6 +20,7 @@ export const auth = betterAuth({
 		process.env.APP_URL_2 || 'http://127.0.0.1'
 	],
   secret: process.env.BETTER_AUTH_SECRET,
+
 	database: createPool({
 		host    : process.env.DB_HOST     || '',
 		user    : process.env.DB_USERNAME || '',
@@ -24,6 +28,7 @@ export const auth = betterAuth({
 		database: process.env.DB_DATABASE || '',
 		timezone: 'Z'
 	}),
+
   emailAndPassword: {
 		enabled: true,
 		disableSignUp: false,
@@ -33,38 +38,25 @@ export const auth = betterAuth({
 		maxPasswordLength: 128,
 		resetPasswordTokenExpiresIn: 3600,
 		sendResetPassword: async ({ user, url, token }, request) => {
+			const language = getLanguageFromRequest(request as unknown as Request);
       void sendEmail({
         to: '"' + user.name + '" <' + user.email + '>',
-        subject: "Reset your password",
-        text: `Copy paste this link in your browser to reset your password:\n\n${url}`,
-				html: `
-					<p style="margin-top: 5px; margin-bottom: 5px;">
-						Click the link below to reset your password:
-					</p>
-					<p>
-						<a href="${url}" target="_blank" rel="noopener noreferrer">
-							Reset my password
-						</a>
-					</p>
-				`,
+        subject: EMAIL_CONTENTS.sendResetPassword.subject[language],
+        text: EMAIL_CONTENTS.sendResetPassword.text[language](url),
+				html: EMAIL_CONTENTS.sendResetPassword.html[language](url),
       });
 		},
     onExistingUserSignUp: async ({ user }, request) => {
+			const language = getLanguageFromRequest(request as unknown as Request);
       void sendEmail({
         to: '"' + user.name + '" <' + user.email + '>',
-        subject: "Sign-up attempt with your email",
-        text: "Someone tried to create an account using your email address. If this was you, try signing in instead. If not, you can safely ignore this email.",
-				html: `
-					<p style="margin-top: 5px; margin-bottom: 5px;">
-						Someone tried to create an account using your email address.
-					</p>
-					<p>
-						If this was you, try signing in instead. If not, you can safely ignore this email.
-					</p>
-				`,
+        subject: EMAIL_CONTENTS.existingUserSignUp.subject[language],
+        text: EMAIL_CONTENTS.existingUserSignUp.text[language],
+				html: EMAIL_CONTENTS.existingUserSignUp.html[language],
       });
     },
   },
+
 	emailVerification: {
 		sendOnSignUp: true,
 		sendOnSignIn: true,
@@ -72,80 +64,58 @@ export const auth = betterAuth({
 		expiresIn: 3600,
 		sendVerificationEmail: async ({ user, url, token }, request) => {
 			url = url.replace('%2Flogin', '%2Femail-verified');
+			const language = getLanguageFromRequest(request as unknown as Request);
 			void sendEmail({
         to: '"' + user.name + '" <' + user.email + '>',
-        subject: "Verify your email",
-        text: `Copy paste this link in your browser to verify your email:\n\n${url}`,
-				html: `
-					<p style="margin-top: 5px; margin-bottom: 5px;">
-						Click the link below to verify your email:
-					</p>
-					<p>
-						<a href="${url}" target="_blank" rel="noopener noreferrer">
-							Verify my email
-						</a>
-					</p>
-				`,
+        subject: EMAIL_CONTENTS.sendVerificationEmail.subject[language],
+        text: EMAIL_CONTENTS.sendVerificationEmail.text[language](url),
+				html: EMAIL_CONTENTS.sendVerificationEmail.html[language](url),
       });
 		},
 	},
+
   plugins: [
 		twoFactor({
 			issuer: process.env.APP_NAME,
       otpOptions: {
 				async sendOTP({ user, otp }, ctx) {
-					void sendEmail({
-						to: '"' + user.name + '" <' + user.email + '>',
-						subject: "Here is your one-time password",
-						text: `Copy paste this one-time password to log-in:\n${otp}`,
-						html: `
-							<p style="margin-top: 5px; margin-bottom: 5px;">
-								Copy paste this one-time password to log-in:
-							</p>
-							<p>
-								${otp}
-							</p>
-						`,
-					});
+					try {
+						const language = getLanguageFromRequest(ctx?.request as unknown as Request);
+						void sendEmail({
+							to: '"' + user.name + '" <' + user.email + '>',
+							subject: EMAIL_CONTENTS.sendOTP.subject[language],
+							text: EMAIL_CONTENTS.sendOTP.text[language](otp),
+							html: EMAIL_CONTENTS.sendOTP.html[language](otp),
+						});
+					} catch(e) {
+						throw(e);
+					};
 				},
 			},
     }),
   ],
+
 	user: {
 		changeEmail: {
 			enabled: true,
 			sendChangeEmailConfirmation: async ({ user, newEmail, url, token }, request) => {
+				const language = getLanguageFromRequest(request as unknown as Request);
 				void sendEmail({
 					to: '"' + user.name + '" <' + user.email + '>',
-					subject: 'Approve email change',
-					text: `Copy paste this link in your browser to approve the change to ${newEmail}:\n\n${url}`,
-					html: `
-						<p style="margin-top: 5px; margin-bottom: 5px;">
-							Click the link below to approve the change to ${newEmail}:
-						</p>
-						<p>
-							<a href="${url}" target="_blank" rel="noopener noreferrer">
-								Reset my email to ${newEmail}
-							</a>
-						</p>
-					`,
+					subject: EMAIL_CONTENTS.sendChangeEmailConfirmation.subject[language],
+					text: EMAIL_CONTENTS.sendChangeEmailConfirmation.text[language](newEmail, url),
+					html: EMAIL_CONTENTS.sendChangeEmailConfirmation.html[language](newEmail, url),
 				});
 			},
 		},
 		additionalFields: {
-			twoFactorEmailOnly: {
-				type: "boolean",
-        required: false,
-        defaultValue: false,
-				input: false,
-			},
 			role: {
         type: ["user", "admin"],
         required: false,
         defaultValue: "user",
         input: false,
       },
-			banned: {
+			twoFactorEmailOnly: {
 				type: "boolean",
         required: false,
         defaultValue: false,
@@ -153,13 +123,19 @@ export const auth = betterAuth({
 			},
 			approved: {
 				type: "boolean",
-        required: false, //true,
+        required: false,
 				defaultValue: false,
-        //defaultValue: process.env.BETTER_AUTH_FORCE_APPROVAL ? false : true,
+				input: false,
+			},
+			banned: {
+				type: "boolean",
+        required: false,
+        defaultValue: false,
 				input: false,
 			},
 		}
 	},
+
 	rateLimit: {
 		enabled: true,
 		window: 10, // time window in seconds
@@ -176,6 +152,7 @@ export const auth = betterAuth({
 		},
 		cookiePrefix: process.env.APP_NAME,
 	},
+
 	logger: {
 		disabled: false,
 		disableColors: false,
@@ -191,6 +168,7 @@ export const auth = betterAuth({
 				logger.debug(`[${level}] ${message}`, ...args);
 		},
 	},
+	
 	hooks: {
 		before: createAuthMiddleware(async (ctx) => {
 			// Execute before processing the request
@@ -199,6 +177,7 @@ export const auth = betterAuth({
 			logger.debug("Request body:", ctx.body || { body: null });
 			logger.debug("------------- [Auth Hooks] BEFORE ends -------------");
 		}),
+
 		after: createAuthMiddleware(async (ctx) => {
 			// Execute after processing the request
 			logger.debug("------------- [Auth Hooks] AFTER starts -------------");
@@ -212,19 +191,12 @@ export const auth = betterAuth({
 						from: '"' + ctx.body.name + '" <' + ctx.body.email + '>',
 						message: "New subscription approval!",
 					});
-					
+					const language = getLanguageFromRequest(ctx?.request as unknown as Request);
 					void sendEmail({
 						to: '"' + ctx.body.name + '" <' + ctx.body.email + '>',
-						subject: 'Approval',
-						text: `You need to be approved, you will be contacted soon.\nThanks for your subscription.`,
-						html: `
-							<p style="margin-top: 5px; margin-bottom: 5px;">
-								You need to be approved, you will be contacted soon.
-							</p>
-							<p>
-								Thanks for your subscription.
-							</p>
-						`,
+						subject: EMAIL_CONTENTS.userApprovalConfirmation.subject[language],
+						text: EMAIL_CONTENTS.userApprovalConfirmation.text[language],
+						html: EMAIL_CONTENTS.userApprovalConfirmation.html[language],
 					});
 				}
 				catch(e) {
@@ -233,11 +205,17 @@ export const auth = betterAuth({
 			};
 
 			const error = ctx.context.returned;
-
+			
 			if (isAPIError(error)) {
 				throw new APIError(
 					// @ts-ignore
-					error.status, { ...error.body, message: [BASE_ERROR_CODES_FR[error.body?.code], error.message] }
+					error.status,
+					{
+						// @ts-ignore
+						...error.body,
+						// @ts-ignore
+						message: [BASE_ERROR_CODES_FR[error.body?.code] || error.message, error.message]
+					}
 				);
 			};
 		}),
