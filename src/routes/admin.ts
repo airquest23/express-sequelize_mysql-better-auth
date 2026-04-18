@@ -54,7 +54,7 @@ adminRouter.get("/", async (req: Request, res: Response) => {
     return returnPage(res, 'layout_dashboard', 'admin/messages_list',
     {
       props: {
-        currentPage: 'texts',
+        currentPage: 'admin',
       },
       model: {
         items: parseDBObject(messages) || "",

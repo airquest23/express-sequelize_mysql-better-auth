@@ -1,0 +1,138 @@
+<div class="d-flex align-items-center justify-content-between mt-3">
+  <!-- SEARCH -->
+  <div class="flex-grow-1 d-flex align-items-center">
+    <!-- SEARCH INPUT -->
+    <input
+      type="text"
+      class="form-control"
+      id="gridSearch"
+      placeholder="@(#search)..."
+    />
+    <!-- CANCEL SEARCH BUTTON -->
+    <button
+      type="button"
+      class="btn btn-sm btn-close ms-2"
+      id="cancelSearch"
+      aria-label="@(#erase)"
+      data-bs-toggle="tooltip"
+      data-bs-title="@(#searchErase)"
+      data-bs-placement="top"
+    ></button>
+  </div>
+  
+  <!-- BUTTONS LIST -->
+  <div class="flex-shrink-1 d-flex align-items-center ms-2">
+    <!-- SORT LISTVIEW -->
+    <div
+      class="dropdown"
+      data-bs-toggle="tooltip"
+      data-bs-title="@(#sort)"
+      data-bs-placement="top"
+    >
+      <button
+        type="button"
+        class="btn btn-sm dropdown-toggle"
+        data-bs-toggle="dropdown"
+        data-bs-auto-close="outside"
+        aria-expanded="false"
+        aria-label="@(#sort)"
+      >
+        <div class="rotate-180">
+          <i class="bi bi-filter"></i>
+        </div>
+      </button>
+      <ul class="dropdown-menu" id="sortListView"></ul>
+    </div>
+
+    <!-- HIDE -->
+    <div
+      class="dropdown"
+      data-bs-toggle="tooltip"
+      data-bs-title="@(#hide)"
+      data-bs-placement="top"
+    >
+      <button
+        type="button"
+        class="btn btn-sm dropdown-toggle ms-1"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        aria-label="@(#hide)"
+      ><i class="bi bi-eye-slash"></i></button>
+      <ul class="dropdown-menu" id="hideDD"></ul>
+    </div>
+
+    <!-- RESIZE COLUMNS -->
+    <div
+      id="resizeButton"
+      data-bs-toggle="tooltip"
+      data-bs-title="@(#resizeCols)"
+      data-bs-placement="top"
+    >
+      <button
+        type="button"
+        class="btn btn-sm ms-1"
+        data-bs-toggle="modal"
+        data-bs-target="#resizeModal"
+        aria-label="@(#resizeCols)"
+      ><i class="bi bi-arrows"></i></button>
+      
+      <!-- Modal -->
+      @{component({
+        _path: '~components/modal_dialog',
+        id: 'resizeModal',
+        labelId: 'resizeModalLabel',
+        title: "@(#resizeCols)",
+        bodyId: 'resizeModalBody',
+        closeLabel: "@(#close)"
+      })}
+    </div>
+
+    <!-- REORDER COLUMNS -->
+    <div
+      id="reorderButton"
+      data-bs-toggle="tooltip"
+      data-bs-title="@(#reorderCols)"
+      data-bs-placement="top"
+    >
+      <button
+        type="button"
+        class="btn btn-sm ms-1"
+        data-bs-toggle="modal"
+        data-bs-target="#reorderModal"
+        aria-label="@(#reorderCols)"
+      ><i class="bi bi-arrow-left-right"></i></button>
+      
+      <!-- Modal -->
+      @{component({
+        _path: '~components/modal_dialog',
+        id: 'reorderModal',
+        labelId: 'reorderModalLabel',
+        title: "@(#reorderCols)",
+        bodyId: 'reorderModalBody',
+        closeLabel: "@(#close)"
+      })}
+    </div>
+    
+    <!-- SELECT ALL -->
+    <button
+      type="button"
+      class="btn btn-sm ms-1"
+      id="selectAll"
+      aria-label="@(#selectAll)"
+      data-bs-toggle="tooltip"
+      data-bs-title="@(#selectAll)"
+      data-bs-placement="top"
+    ><i class="bi bi-list-check"></i></button>
+
+    <!-- CLEAR SELECTION -->
+    <button
+      type="button"
+      class="btn btn-sm ms-1"
+      id="clearSelection"
+      aria-label="@(#clearSelection)"
+      data-bs-toggle="tooltip"
+      data-bs-title="@(#clearSelection)"
+      data-bs-placement="top"
+    ><i class="bi bi-eraser"></i></button>
+  </div>
+</div>

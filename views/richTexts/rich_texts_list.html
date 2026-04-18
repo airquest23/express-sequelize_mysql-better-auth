@@ -8,176 +8,21 @@
     <h2 class="h2">
       @(#richTexts)
     </h2>
-
-    <div class="ms-auto mb-3 d-flex align-items-center">
-      <button
-        type="button"  
-        class="btn btn-outline-secondary me-2 disabled"
-        aria-label="@(#gridView)"
-        id="gridMode"
-        disabled
-      ><i class="bi bi-table"></i></button>
-
-      <button
-        type="button"  
-        class="btn btn-outline-secondary"
-        aria-label="@(#listView)"
-        id="listMode"
-      ><i class="bi bi-grid-fill"></i></button>
-    </div>
+    @{view('~components/grid/grid_switch_mode_btns')}
   </div>
 
   <!-- ROW (TABLE BUTTONS) -->
-  <div class="d-flex justify-content-start flex-wrap flex-md-nowrap align-items-center gap-1 pt-3 pb-2">
-    <a
-      role="button"
-      class="btn btn-success"
-      aria-label="@(#new)"
-      href="/rich-texts/new"
-    >
-      <div class="d-flex align-items-stretch">
-        <i class="bi bi-plus-circle me-2"></i>
-        @(#new)
-      </div>
-    </a>
-
-    <button
-      type="button"  
-      class="btn btn-secondary"
-      aria-label="@(#edit)"
-      onclick="editObject()"
-    >
-      <div class="d-flex align-items-stretch">
-        <i class="bi bi-pencil me-2"></i>
-        @(#edit)
-      </div>
-    </button>
-
-    <button
-      type="button"
-      class="btn btn-danger"
-      aria-label="@(#delete)"
-      onclick="deleteObjects()"
-    >
-      <div class="d-flex align-items-stretch">
-        <i class="bi bi-trash me-2"></i>
-        @(#delete)
-      </div>
-    </button>
-  </div>
+  @{component({
+    _path: '~components/grid/grid_action_btns',
+    newLink: '/rich-texts/new',
+    editFn: 'editObject()',
+    deleteFn: 'deleteObjects()',
+  })}
   
   <!--------------------------------------->
   <!-- TABLE HEADER (SEARCH AND BUTTONS) -->
   <!--------------------------------------->
-  <div class="d-flex align-items-center justify-content-between mt-3">
-    <!-- SEARCH -->
-    <div class="flex-grow-1 d-flex align-items-center">
-      <!-- SEARCH INPUT -->
-      <input
-        type="text"
-        class="form-control"
-        id="gridSearch"
-        placeholder="@(#search)..."
-      />
-      <!-- CANCEL SEARCH BUTTON -->
-      <button
-        type="button"
-        class="btn btn-sm btn-close ms-2"
-        id="cancelSearch"
-        aria-label="@(#cancel)"
-      ></button>
-    </div>
-    
-    <!-- BUTTONS LIST -->
-    <div class="flex-shrink-1 d-flex align-items-center ms-2">
-      <!-- SORT LISTVIEW -->
-      <div class="dropdown">
-        <button
-          type="button"
-          class="btn btn-sm dropdown-toggle"
-          data-bs-toggle="dropdown"
-          data-bs-auto-close="outside"
-          aria-expanded="false"
-          aria-label="@(#sort)"
-        >
-          <div class="rotate-180">
-            <i class="bi bi-filter"></i>
-          </div>
-        </button>
-        <ul class="dropdown-menu" id="sortListView"></ul>
-      </div>
-
-      <!-- HIDE -->
-      <div class="dropdown">
-        <button
-          type="button"
-          class="btn btn-sm dropdown-toggle ms-1"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-          aria-label="@(#hide)"
-        ><i class="bi bi-eye-slash"></i></button>
-        <ul class="dropdown-menu" id="hideDD"></ul>
-      </div>
-
-      <!-- RESIZE COLUMNS -->
-      <div id="resizeButton">
-        <button
-          type="button"
-          class="btn btn-sm ms-1"
-          data-bs-toggle="modal"
-          data-bs-target="#resizeModal"
-          aria-label="@(#resizeCols)"
-        ><i class="bi bi-arrows"></i></button>
-        
-        <!-- Modal -->
-        @{component({
-          _path: '~components/modal_dialog',
-          id: 'resizeModal',
-          labelId: 'resizeModalLabel',
-          title: "@(#resizeCols)",
-          bodyId: 'resizeModalBody',
-          closeLabel: "@(#close)"
-        })}
-      </div>
-
-      <!-- REORDER COLUMNS -->
-      <div id="reorderButton">
-        <button
-          type="button"
-          class="btn btn-sm ms-1"
-          data-bs-toggle="modal"
-          data-bs-target="#reorderModal"
-          aria-label="@(#reorderCols)"
-        ><i class="bi bi-arrow-left-right"></i></button>
-        
-        <!-- Modal -->
-        @{component({
-          _path: '~components/modal_dialog',
-          id: 'reorderModal',
-          labelId: 'reorderModalLabel',
-          title: "@(#reorderCols)",
-          bodyId: 'reorderModalBody',
-          closeLabel: "@(#close)"
-        })}
-      </div>
-
-      <!-- CLEAR SELECTION -->
-      <button
-        type="button"
-        class="btn btn-sm ms-1"
-        aria-label="@(#clearSelection)"
-        id="clearSelection"
-      ><i class="bi bi-eraser"></i></button>
-      
-      <!-- SELECT ALL -->
-      <button
-        type="button"
-        class="btn btn-sm ms-1"
-        aria-label="@(#selectAll)"
-        id="selectAll"
-      ><i class="bi bi-list-check"></i></button>
-    </div>
-  </div>
+  @{view('~components/grid/grid_header')}
 
   <!----------------------->
   <!-- TABLE BODY (DATA) -->
@@ -203,82 +48,7 @@
   <!---------------------------------------------------------->
   <!-- TABLE FOOTER (PAGINATION & CHANGE LISTVIEW COLUMNS)  -->
   <!---------------------------------------------------------->
-  <div class="d-flex align-items-center justify-content-between mb-3 mobilePaginationContainer">
-    <!-- PAGINATION INFOS & CHANGE LIMIT -->
-    <div class="d-flex flex-column mobilePaginationInfo">
-      <!-- PAGINATION INFOS -->
-      <div class="mobilePaginationRowsInfo">
-        <div>
-          <span>@(#objects) </span>
-          <i id="firstShowingLine">1</i>
-          <span> @(#to) </span>
-          <i id="lastShowingLine">@{model.lastLine}</i>
-          <span> @(#of) </span>
-          <b id="totalLines">@{model.count}</b>
-        </div>
-      </div>
-
-      <!-- CHANGE PAGES LIMIT -->
-      <div class="mt-2 mobilePaginationLimitInfo">
-        <!-- CHANGE PAGES LIMIT INPUT -->
-        <span>(@(#max). </span>
-        <input
-          type="number"
-          class="limitInput"
-          placeholder="100"
-          value="@{model.limit}"
-          id="limitPerPage"
-        >
-
-        <!-- CLEAR PAGES LIMIT BUTTON -->
-        <button
-          type="button"
-          class="btn btn-sm mb-1"
-          aria-label="@(#resetPagination)"
-          id="resetPagination"
-        ><i class="bi bi-x-octagon"></i></button>
-        <span>@(#objectsNoCap) / @(#pageNoCap))</span>
-      </div>
-    </div>
-    
-    <!--PAGINATION & CHANGE LISTVIEW COLS-->
-    <div class="d-flex flex-column">
-      <!-- PAGINATION -->
-      <ul
-        class="pagination m-0"
-        id="pagination"
-      ></ul>
-
-      <!-- CHANGE LISTVIEW COLS -->
-      <div
-        class="mt-4 d-none"
-        id="nrOfColsContainer"
-      >
-        <!-- CHANGE LISTVIEW COLS INPUT -->
-        <span class="me-2">
-          <i class="bi bi-grid-3x2-gap-fill"></i>
-          <span class="ms-1"> -&gt; </span>
-          <i class="bi bi-grid-3x3-gap-fill"></i>
-          <span> : </span>
-        </span>
-        <input
-          type="number"
-          class="limitInput"
-          placeholder="3"
-          value="3"
-          id="nrOfCols"
-        >
-
-        <!-- CLEAR LISTVIEW COLS BUTTON -->
-        <button
-          type="button"
-          class="btn btn-sm mb-1"
-          aria-label="@(#resetCols)"
-          id="resetCols"
-        ><i class="bi bi-x-octagon"></i></button>
-      </div>
-    </div>
-  </div>
+  @{view('~components/grid/grid_footer')}
 </main>
 
 <script>
@@ -453,4 +223,8 @@
         document.activeElement.blur();
     });
   });
+
+  /*////////////////////////////////////////*/
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 </script>

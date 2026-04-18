@@ -101,6 +101,10 @@ export const ressources: { [key: string]: string[] } = {
     'Recherche',
     'Search'
   ],
+  searchErase: [
+    'Effacer la recherche',
+    'Erase search'
+  ],
   success: [
     'Succès',
     'Success'
@@ -524,6 +528,10 @@ export const ressources: { [key: string]: string[] } = {
   cancel: [
     'Annuler',
     'Cancel'
+  ],
+  erase: [
+    'Effacer',
+    'Erase'
   ],
   ok: [
     'Ok',

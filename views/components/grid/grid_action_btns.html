@@ -1,0 +1,37 @@
+<div class="d-flex justify-content-start flex-wrap flex-md-nowrap align-items-center gap-1 pt-3 pb-2">
+  <a
+    role="button"
+    class="btn btn-success"
+    aria-label="@(#new)"
+    href="@{props.newLink}"
+  >
+    <div class="d-flex align-items-stretch">
+      <i class="bi bi-plus-circle me-2"></i>
+      @(#new)
+    </div>
+  </a>
+
+  <button
+    type="button"  
+    class="btn btn-secondary"
+    aria-label="@(#edit)"
+    onclick="@{props.editFn}"
+  >
+    <div class="d-flex align-items-stretch">
+      <i class="bi bi-pencil me-2"></i>
+      @(#edit)
+    </div>
+  </button>
+
+  <button
+    type="button"
+    class="btn btn-danger"
+    aria-label="@(#delete)"
+    onclick="@{props.deleteFn}"
+  >
+    <div class="d-flex align-items-stretch">
+      <i class="bi bi-trash me-2"></i>
+      @(#delete)
+    </div>
+  </button>
+</div>

@@ -173,10 +173,12 @@ class Grid {
   constructor(params) {
     /////////////////////////////////////////
     // Grid props
+    ////////////////////// Table
     if(params.table)
       /** @type {String} - Table ID (<table>) */
       this.table = params.table;
 
+    ////////////////////// Data
     if(params.data)
       /** @type {Object[]} - Array of objects */
       this.data = params.data;
@@ -185,6 +187,7 @@ class Grid {
     
     this.#dataLengthBeforePagination = this.data.length;
 
+    ////////////////////// UUID prop
     /** @type {String} - Data property name containing the row Uuid */
     this.uuidProp = params.uuidProp;
     
@@ -198,6 +201,7 @@ class Grid {
 
     /////////////////////////////////////////
     // Other props
+    ////////////////////// Columns
     if(params.columns) {
       /** @type {Column[]} - Array of column objects */
       this.columns = params.columns;
@@ -255,7 +259,86 @@ class Grid {
       
       this.#setDisplayedColumns();
     };
+    
+    ////////////////////// KeyNav
+    if(params.keyNav) {
+      /** @type {KeyNav} - KeyNav configuration object */
+      this.keyNav = params.keyNav;
+      this.#addKeyNav();
+    };
 
+    ////////////////////// Selection
+    if (params.selection) {
+      /** @type {selection} - Selection configuration object */
+      this.selection = params.selection;
+
+      if (this.selection.mode === ENUM_MODE.mutiple)
+        this.#selectedObjects = [];
+
+      if (this.selection.clearId)
+        this.#addClearSelection();
+      
+      if (this.selection.mode === ENUM_MODE.mutiple && this.selection.selectAllId)
+        this.#addSelectAll();
+    };
+
+    ////////////////////// Columns
+    if(params.pagination) {
+      /** @type {Pagination} - Pagination configuration object */
+      this.pagination = {
+        ...params.pagination,
+        page: params.pagination.page || 1,
+        limitPerPage: params.pagination.limitPerPage || this.#defaultPageLimit,
+      };
+      this.#addPagination();
+    } else {
+      this.pagination = {
+        page: 1,
+        limitPerPage: this.#defaultPageLimit,
+      };
+    };
+
+    ////////////////////// Columns
+    if(params.search) {
+      /** @type {Search} - Search configuration object */
+      this.search = {};
+      if (isObject(params.search)) {
+        this.search.id = params.search.id;
+        this.search.cancel = params.search.cancel;
+        this.#addCancelSearch();
+      } else {
+        this.search.id = params.search;
+      };
+      this.#addSearch();
+    };
+
+    ////////////////////// Sort
+    if(params.sort)
+      /** @type {Boolean} - Enable sorting */
+      this.sort = params.sort;
+    
+    ////////////////////// Hide
+    if(params.hideId) {
+      /** @type {String} - Hide dropdown Ul ID */
+      this.hide = params.hideId;
+      this.#addHide();
+    };
+
+    ////////////////////// Resize
+    if (params.resize) {
+      /** @type {Resize} - Resize configuration object */
+      this.resize = params.resize;
+      this.#addResize();
+    };
+
+    ////////////////////// Reorder
+    if (params.reorder) {
+      /** @type {Reorder} - Reorder configuration object */
+      this.reorder = params.reorder;
+      this.#addReorder();
+    };
+
+    ////////////////////// ListView
     if (params.listView) {
       /** @type {ListView} - ListView configuration object */
       this.listView = {
@@ -278,76 +361,6 @@ class Grid {
       this.listView = {
         nrOfCols: this.#defaultNrOfCols,
       };
-    };
-    
-    if(params.keyNav) {
-      /** @type {KeyNav} - KeyNav configuration object */
-      this.keyNav = params.keyNav;
-      this.#addKeyNav();
-    };
-
-    if (params.selection) {
-      /** @type {selection} - Selection configuration object */
-      this.selection = params.selection;
-
-      if (this.selection.mode === ENUM_MODE.mutiple)
-        this.#selectedObjects = [];
-
-      if (this.selection.clearId)
-        this.#addClearSelection();
-      
-      if (this.selection.mode === ENUM_MODE.mutiple && this.selection.selectAllId)
-        this.#addSelectAll();
-    };
-
-    if(params.pagination) {
-      /** @type {Pagination} - Pagination configuration object */
-      this.pagination = {
-        ...params.pagination,
-        page: params.pagination.page || 1,
-        limitPerPage: params.pagination.limitPerPage || this.#defaultPageLimit,
-      };
-      this.#addPagination();
-    } else {
-      this.pagination = {
-        page: 1,
-        limitPerPage: this.#defaultPageLimit,
-      };
-    };
-
-    if(params.search) {
-      /** @type {Search} - Search configuration object */
-      this.search = {};
-      if (isObject(params.search)) {
-        this.search.id = params.search.id;
-        this.search.cancel = params.search.cancel;
-        this.#addCancelSearch();
-      } else {
-        this.search.id = params.search;
-      };
-      this.#addSearch();
-    };
-
-    if(params.sort)
-      /** @type {Boolean} - Enable sorting */
-      this.sort = params.sort;
-    
-    if(params.hideId) {
-      /** @type {String} - Hide dropdown Ul ID */
-      this.hide = params.hideId;
-      this.#addHide();
-    };
-
-    if (params.resize) {
-      /** @type {Resize} - Resize configuration object */
-      this.resize = params.resize;
-      this.#addResize();
-    };
-
-    if (params.reorder) {
-      /** @type {Reorder} - Reorder configuration object */
-      this.reorder = params.reorder;
-      this.#addReorder();
     };
   };
   
