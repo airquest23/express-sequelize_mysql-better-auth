@@ -4,7 +4,7 @@
   </div>
   
   <!---------------------------------->
-  <!--- ROW 1 (USER DETAILS FORM) ---->
+  <!--- ROW 0 (USER DETAILS FORM) ---->
   <!---------------------------------->
   <div class="pt-3 pb-2">
     <form id="formUserDetails" class="needs-validation" novalidate>
@@ -53,6 +53,37 @@
         (error) => handleError(error, true),
       );
     });
+  </script>
+
+  <!---------------------------------->
+  <!-- ROW 1 (USER ACTIONS) -->
+  <!---------------------------------->
+  <div class="pt-3 pb-2">
+    <div class="card">
+      <div class="card-header">
+        @(#userActions)
+      </div>
+      <div class="card-body">
+        <div>
+          <label>@(#userActionRemoveStorage)</label>
+          <button
+            class="btn btn-danger ms-3"
+            type="button"
+            onclick="userActionRemoveStorage()"
+          >
+            @(#delete)
+          </button>
+        </div>
+      </div>
+      <div class="card-footer text-center">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function userActionRemoveStorage() {
+      localStorage.clear();
+    };
   </script>
 
   <!---------------------------------->

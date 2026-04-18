@@ -1,5 +1,6 @@
 @{import('grid.css')}
 @{import('grid.js')}
+@{import('gridOptions.js')}
 
 <main>
   <!-- ROW (HEADER / TITLE / BUTTONS) -->
@@ -385,18 +386,28 @@
   
   /*////////////////////////////////////////*/
   new Grid({
-    table: 'table',
+    ...gridOptions,
     data: data,
-    uuidProp: 'id',
+    storageId: "rich_texts_grid",
     columns: [
       {
         id: 'content',
         name: "@(#text)",
-        cell: (value) => {
+        cell: (row, value) => {
           if (!value || !isObject(value) || !value.ops) return '';
           let result = '';
           value.ops.forEach(el => {
-            return result += el.insert;
+            const rValue = el.insert.substring(0, 50);
+            return result += rValue + `
+            <a
+              href="#"
+              role="button"
+              class="btn btn-outline-secondary btn-sm ms-2"
+              aria-disabled="true"
+              onclick="window.location.href = '/rich-texts/edit/${row.id}'"
+            >
+              @(#readMore)
+            </a>`;
           });
           return result;
         },
@@ -414,18 +425,17 @@
       enterFn: editObjectWithEnterKey,
       deleteFn: deleteObjectWithDeleteKey,
     },
-    hideId: 'hideDD',
-    search: {
-      id: 'gridSearch',
-      cancel: 'cancelSearch',
+    selection: {
+      ...gridOptions.selection,
+      fn: (selection) => {
+        selectedObject = selection;
+        console.log(selectedObject);
+      },
     },
-    sort: true,
     pagination: {
+      ...gridOptions.pagination,
       page: @{model.page},
       limitPerPage: @{model.limit},
-      limitId: 'limitPerPage',
-      pagesUlId: 'pagination',
-      maxButtonsNextToCurrent: 1,
       pagesLabels: {
         page: "@(#page)",
         firstPage: "@(#firstPage)",
@@ -433,43 +443,6 @@
         previousPage: "@(#previousPage)",
         nextPage: "@(#nextPage)",
       },
-      firstShowingLineId: 'firstShowingLine',
-      lastShowingLineId: 'lastShowingLine',
-      totalLinesId: 'totalLines',
-      resetBtnId: 'resetPagination',
-    },
-    selection: {
-      mode: 'multiple',
-      clearId: 'clearSelection',
-      selectAllId: 'selectAll',
-      fn: (selection) => {
-        selectedObject = selection;
-        console.log(selectedObject);
-      },
-    },
-    resize: {
-      buttonId: 'resizeButton',
-      modalId: 'resizeModal',
-      modalBodyId: 'resizeModalBody',
-    },
-    reorder: {
-      buttonId: 'reorderButton',
-      modalId: 'reorderModal',
-      modalBodyId: 'reorderModalBody',
-    },
-    listView: {
-      id: 'listView',
-      tableId: 'tableContainer',
-      sortId: 'sortListView',
-      nrOfCols: 3,
-      nrOfColsId: 'nrOfCols',
-      nrOfColsContainer: 'nrOfColsContainer',
-      resetBtnId: 'resetCols',
-      buttons: {
-        gridMode: 'gridMode',
-        listMode: 'listMode',
-      },
-      transition: true,
     },
   }).renderTable();
   

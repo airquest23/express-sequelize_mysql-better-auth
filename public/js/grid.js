@@ -3,11 +3,27 @@
 * @property {String} id - Property name from the data
 * @property {String} name - Description of the data
 * @property {Function} cell - Cell formatting function (must return an html string)
+* @property {Number} maxDisplayLength - Maximum displayed length
+* @property {String} maxDisplayLengthString - Label for "read more" (for max. displayed length)
+* @property {Function} maxDisplayLengthFn - Function to execute when pressing "read more" button
 * @property {Boolean} doNotSort - Do not sort this column
 * @property {Boolean} doNotHide - Do not hide this column
 * @property {Boolean} isHidden - Is column hidden ?
 * @property {Number} order - Column order (index after reordering = integer)
 * @property {Number} width - Column width (in %)
+*/
+
+/**
+* @typedef {Object} ListView
+* @property {String} id - Listview container ID (<div>)
+* @property {String} tableId - Table container ID (<div>)
+* @property {String} sortId - Sort container ID
+* @property {Number} nrOfCols - Number of columns per row
+* @property {String} nrOfColsId - NrOfCols input ID
+* @property {String} nrOfColsContainer - NrOfCols container ID (for hiding in grid mode)
+* @property {String} resetBtnId - Reset button ID
+* @property {Object} buttons - IDs of buttons to switch between grid and list modes
+* @property {Boolean} transition - Add transitions when switching mode
 */
 
 /**
@@ -17,19 +33,11 @@
 */
 
 /**
-* @typedef {Object} Search
-* @property {String} id - Search input ID
-* @property {String} cancel - Cancel search button ID
-* @property {Boolean} doNotResetSelection - Do not reset selection on search change (don't keep only searched lines)
-*/
-
-/**
-* @typedef {Object} PagesLabels
-* @property {String} page - 'Page' label
-* @property {String} firstPage - 'First page' label
-* @property {String} lastPage - 'Last page' label
-* @property {String} previousPage - 'Previous page' label
-* @property {String} nextPage - 'Next page' label
+* @typedef {Object} selection
+* @property {String} mode - Selection mode (single or multiple)
+* @property {String} clearId - 'Clear selection' button ID
+* @property {String} selectAllId - 'Select all' button ID
+* @property {Function} fn - Function to execute on selection (param : one object or one array)
 */
 
 /**
@@ -48,11 +56,19 @@
 */
 
 /**
-* @typedef {Object} selection
-* @property {String} mode - Selection mode (single or multiple)
-* @property {String} clearId - 'Clear selection' button ID
-* @property {String} selectAllId - 'Select all' button ID
-* @property {Function} fn - Function to execute on selection (param : one object or one array)
+* @typedef {Object} PagesLabels
+* @property {String} page - 'Page' label
+* @property {String} firstPage - 'First page' label
+* @property {String} lastPage - 'Last page' label
+* @property {String} previousPage - 'Previous page' label
+* @property {String} nextPage - 'Next page' label
+*/
+
+/**
+* @typedef {Object} Search
+* @property {String} id - Search input ID
+* @property {String} cancel - Cancel search button ID
+* @property {Boolean} doNotResetSelection - Do not reset selection on search change (don't keep only searched lines)
 */
 
 /**
@@ -67,19 +83,6 @@
 * @property {String} buttonId - Button ID
 * @property {String} modalId - Modal ID
 * @property {String} modalBodyId - Modal body ID
-*/
-
-/**
-* @typedef {Object} ListView
-* @property {String} id - Listview container ID (<div>)
-* @property {String} tableId - Table container ID (<div>)
-* @property {String} sortId - Sort container ID
-* @property {Number} nrOfCols - Number of columns per row
-* @property {String} nrOfColsId - NrOfCols input ID
-* @property {String} nrOfColsContainer - NrOfCols container ID (for hiding in grid mode)
-* @property {String} resetBtnId - Reset button ID
-* @property {Object} buttons - IDs of buttons to switch between grid and list modes
-* @property {Boolean} transition - Add transitions when switching mode
 */
 
 /**
@@ -169,15 +172,7 @@ class Grid {
   */
   constructor(params) {
     /////////////////////////////////////////
-    // Storage prefix
-    let appPrefix = window.appName ? window.appName + '-' : '';
-    let instancePrefix = params.storageId ? params.storageId + '.' : '';
-
-    /** @type {String} - Storage ID */
-    this.storageId = appPrefix + instancePrefix;
-
-    /////////////////////////////////////////
-    // Set Grid props
+    // Grid props
     if(params.table)
       /** @type {String} - Table ID (<table>) */
       this.table = params.table;
@@ -193,9 +188,20 @@ class Grid {
     /** @type {String} - Data property name containing the row Uuid */
     this.uuidProp = params.uuidProp;
     
+    /////////////////////////////////////////
+    // Storage prefix
+    let appPrefix = window.appName ? window.appName + '-' : '';
+    let instancePrefix = params.storageId ? params.storageId + '.' : '';
+
+    /** @type {String} - Storage ID */
+    this.storageId = appPrefix + instancePrefix;
+
+    /////////////////////////////////////////
+    // Other props
     if(params.columns) {
       /** @type {Column[]} - Array of column objects */
       this.columns = params.columns;
+      
       for (let i = 0, l = this.columns.length; i < l; i++) {
         this.columns[i].order = i;
       };
@@ -216,6 +222,7 @@ class Grid {
           };
         };
       };
+
       if (this.#getStorageValue(KEY_COLUMNS_SIZES)) {
         let columnsSizesArray;
         try {
@@ -230,6 +237,7 @@ class Grid {
           });
         };
       };
+
       if (this.#getStorageValue(KEY_COLUMNS_ORDER)) {
         let columnOrderArray;
         try {
@@ -246,76 +254,6 @@ class Grid {
       };
       
       this.#setDisplayedColumns();
-    };
-    
-    if(params.keyNav) {
-      /** @type {KeyNav} - KeyNav configuration object */
-      this.keyNav = params.keyNav;
-      this.#addKeyNav();
-    };
-    
-    if(params.hideId) {
-      /** @type {String} - Hide dropdown Ul ID */
-      this.hide = params.hideId;
-      this.#addHide();
-    };
-    
-    if(params.search) {
-      /** @type {Search} - Search configuration object */
-      this.search = {};
-      if (isObject(params.search)) {
-        this.search.id = params.search.id;
-        this.search.cancel = params.search.cancel;
-        this.#addCancelSearch();
-      } else {
-        this.search.id = params.search;
-      };
-      this.#addSearch();
-    };
-
-    if(params.sort)
-      /** @type {Boolean} - Enable sorting */
-      this.sort = params.sort;
-
-    if(params.pagination) {
-      /** @type {Pagination} - Pagination configuration object */
-      this.pagination = {
-        ...params.pagination,
-        page: params.pagination.page || 1,
-        limitPerPage: params.pagination.limitPerPage || this.#defaultPageLimit,
-      };
-      this.#addPagination();
-    } else {
-      this.pagination = {
-        page: 1,
-        limitPerPage: this.#defaultPageLimit,
-      };
-    };
-
-    if (params.selection) {
-      /** @type {selection} - Selection configuration object */
-      this.selection = params.selection;
-
-      if (this.selection.mode === ENUM_MODE.mutiple)
-        this.#selectedObjects = [];
-
-      if (this.selection.clearId)
-        this.#addClearSelection();
-      
-      if (this.selection.mode === ENUM_MODE.mutiple && this.selection.selectAllId)
-        this.#addSelectAll();
-    };
-
-    if (params.resize) {
-      /** @type {Resize} - Resize configuration object */
-      this.resize = params.resize;
-      this.#addResize();
-    };
-
-    if (params.reorder) {
-      /** @type {Reorder} - Reorder configuration object */
-      this.reorder = params.reorder;
-      this.#addReorder();
     };
 
     if (params.listView) {
@@ -340,6 +278,76 @@ class Grid {
       this.listView = {
         nrOfCols: this.#defaultNrOfCols,
       };
+    };
+    
+    if(params.keyNav) {
+      /** @type {KeyNav} - KeyNav configuration object */
+      this.keyNav = params.keyNav;
+      this.#addKeyNav();
+    };
+
+    if (params.selection) {
+      /** @type {selection} - Selection configuration object */
+      this.selection = params.selection;
+
+      if (this.selection.mode === ENUM_MODE.mutiple)
+        this.#selectedObjects = [];
+
+      if (this.selection.clearId)
+        this.#addClearSelection();
+      
+      if (this.selection.mode === ENUM_MODE.mutiple && this.selection.selectAllId)
+        this.#addSelectAll();
+    };
+
+    if(params.pagination) {
+      /** @type {Pagination} - Pagination configuration object */
+      this.pagination = {
+        ...params.pagination,
+        page: params.pagination.page || 1,
+        limitPerPage: params.pagination.limitPerPage || this.#defaultPageLimit,
+      };
+      this.#addPagination();
+    } else {
+      this.pagination = {
+        page: 1,
+        limitPerPage: this.#defaultPageLimit,
+      };
+    };
+
+    if(params.search) {
+      /** @type {Search} - Search configuration object */
+      this.search = {};
+      if (isObject(params.search)) {
+        this.search.id = params.search.id;
+        this.search.cancel = params.search.cancel;
+        this.#addCancelSearch();
+      } else {
+        this.search.id = params.search;
+      };
+      this.#addSearch();
+    };
+
+    if(params.sort)
+      /** @type {Boolean} - Enable sorting */
+      this.sort = params.sort;
+    
+    if(params.hideId) {
+      /** @type {String} - Hide dropdown Ul ID */
+      this.hide = params.hideId;
+      this.#addHide();
+    };
+
+    if (params.resize) {
+      /** @type {Resize} - Resize configuration object */
+      this.resize = params.resize;
+      this.#addResize();
+    };
+
+    if (params.reorder) {
+      /** @type {Reorder} - Reorder configuration object */
+      this.reorder = params.reorder;
+      this.#addReorder();
     };
   };
   
@@ -1464,13 +1472,36 @@ class Grid {
         // Here you can format / style the cell
         const td = document.createElement('td');
         tbody_tr.appendChild(td);
-        if (column.cell) {
-          td.innerHTML = column.cell(value);
-        }
+        if (column.cell)
+          td.innerHTML = column.cell(row, value);
         else if (isObject(value) || Array.isArray(value))
           td.textContent = JSON.stringify(value);
-        else
-          td.textContent = value;
+        else {
+          if (column.maxDisplayLength && Number(column.maxDisplayLength) > 1) {
+            const rValue = value.substring(0, Number(column.maxDisplayLength));
+            const maxDisplayLengthString = column.maxDisplayLengthString || "read more";
+            td.innerHTML = rValue;
+            const a = document.createElement('a');
+            a.setAttribute('href', '#');
+            a.setAttribute('role', 'button');
+            a.setAttribute('class', 'btn btn-outline-secondary btn-sm ms-2');
+            a.setAttribute('aria-disabled', 'true');
+            a.addEventListener('click', (e) => column.maxDisplayLengthFn(row[this.uuidProp]));
+            a.innerText = maxDisplayLengthString;
+            td.appendChild(a);
+            /*`<a
+              href="#"
+              role="button"
+              class="btn btn-outline-secondary btn-sm ms-2"
+              aria-disabled="true"
+              onclick="${this.keyNav.enterFn}"
+            >
+              ${maxDisplayLengthString}
+            </a>`;*/
+          } else {
+            td.textContent = value;
+          };
+        };
       });
 
       if (this.selection) {
@@ -1521,13 +1552,36 @@ class Grid {
           // Here you can format / style the paragraph
           const p = document.createElement('p');
           col.appendChild(p);
-          if (column.cell) {
-            p.innerHTML = column.cell(value);
-          }
+          if (column.cell)
+            p.innerHTML = column.cell(colData, value);
           else if (isObject(value) || Array.isArray(value))
             p.textContent = JSON.stringify(value);
-          else
-            p.textContent = value;
+          else {
+            if (column.maxDisplayLength && Number(column.maxDisplayLength) > 1) {
+              const rValue = value.substring(0, Number(column.maxDisplayLength));
+              const maxDisplayLengthString = column.maxDisplayLengthString || "read more";
+              p.innerHTML = rValue;
+              const a = document.createElement('a');
+              a.setAttribute('href', '#');
+              a.setAttribute('role', 'button');
+              a.setAttribute('class', 'btn btn-outline-secondary btn-sm ms-2');
+              a.setAttribute('aria-disabled', 'true');
+              a.addEventListener('click', (e) => column.maxDisplayLengthFn(row[this.uuidProp]));
+              a.innerText = maxDisplayLengthString;
+              p.appendChild(a);
+              /*`<a
+                href="#"
+                role="button"
+                class="btn btn-outline-secondary btn-sm ms-2"
+                aria-disabled="true"
+                onclick="${this.keyNav.enterFn}"
+              >
+                ${maxDisplayLengthString}
+              </a>`;*/
+            } else {
+              p.textContent = value;
+            };
+          };
         });
         
         if (this.selection) {

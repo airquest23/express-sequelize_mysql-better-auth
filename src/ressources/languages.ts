@@ -293,6 +293,14 @@ export const ressources: { [key: string]: string[] } = {
     'Données utilisateur',
     'User details'
   ],
+  userActions: [
+    'Actions utilisateur',
+    'User actions'
+  ],
+  userActionRemoveStorage: [
+    'Supprimer toutes les données locales stockées',
+    'Remove all local storage data'
+  ],
   userTwoFaTitle: [
     'Authentification à deux facteurs',
     'Two factors authentication'
@@ -436,6 +444,10 @@ export const ressources: { [key: string]: string[] } = {
   max: [
     'max',
     'max'
+  ],
+  readMore: [
+    '(...)',
+    '(...)'
   ],
 
   ///////////////////////////////////////

@@ -1,5 +1,6 @@
 @{import('grid.css')}
 @{import('grid.js')}
+@{import('gridOptions.js')}
 
 <main>
   <!-- ROW (HEADER / TITLE / BUTTONS) -->
@@ -385,6 +386,50 @@
   
   /*////////////////////////////////////////*/
   new Grid({
+      ...gridOptions,
+      data: data,
+      storageId: "texts_grid",
+      columns: [
+        {
+          id: 'content',
+          name: "@(#text)",
+          maxDisplayLength: 50,
+          maxDisplayLengthString: "@(#readMore)",
+          maxDisplayLengthFn: (id) => window.location.href = `/texts/edit/${id}`,
+        },
+        {
+          id: 'createdAt',
+          name: "@(#creationDate)",
+        },
+        { 
+          id: 'updatedAt',
+          name: "@(#modificationDate)",
+        },
+      ],
+      keyNav: {
+        enterFn: editObjectWithEnterKey,
+        deleteFn: deleteObjectWithDeleteKey,
+      },
+      selection: {
+        ...gridOptions.selection,
+        fn: (selection) => {
+          selectedObject = selection;
+          console.log(selectedObject);
+        },
+      },
+      pagination: {
+        ...gridOptions.pagination,
+        page: @{model.page},
+        limitPerPage: @{model.limit},
+        pagesLabels: {
+          page: "@(#page)",
+          firstPage: "@(#firstPage)",
+          lastPage: "@(#lastPage)",
+          previousPage: "@(#previousPage)",
+          nextPage: "@(#nextPage)",
+        },
+      },
+    }/*{
     table: 'table',
     data: data,
     uuidProp: 'id',
@@ -392,15 +437,17 @@
     columns: [
       {
         id: 'content',
-        name: "@(#text)"
+        name: "@(#text)",
+        maxDisplayLength: 30,
+        maxDisplayLength: "@(#readMore)",
       },
       {
         id: 'createdAt',
-        name: "@(#creationDate)"
+        name: "@(#creationDate)",
       },
       { 
         id: 'updatedAt',
-        name: "@(#modificationDate)"
+        name: "@(#modificationDate)",
       },
     ],
     listView: {
@@ -458,14 +505,14 @@
     resize: {
       buttonId: 'resizeButton',
       modalId: 'resizeModal',
-      modalBodyId: 'resizeModalBody'
+      modalBodyId: 'resizeModalBody',
     },
     reorder: {
       buttonId: 'reorderButton',
       modalId: 'reorderModal',
-      modalBodyId: 'reorderModalBody'
+      modalBodyId: 'reorderModalBody',
     },
-  }).renderTable();
+  }*/).renderTable();
   
   /*////////////////////////////////////////*/
   document.addEventListener("DOMContentLoaded", function () {
