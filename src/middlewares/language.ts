@@ -92,8 +92,10 @@ const getLanguageMiddleware = (req: Request, res: Response, next: NextFunction) 
       path.includes('.xml') ||
       path.includes('.php') ||
       path.includes('.txt') ||
+      path.includes('.git') ||
       path.includes('/wp-') ||
       path.includes('/media') ||
+      path.includes('config') ||
       req.headers['from'] && req.headers['from'].includes('googlebot')
     ) {
       return res.status(sc["404-Not-Found"].code).end();
