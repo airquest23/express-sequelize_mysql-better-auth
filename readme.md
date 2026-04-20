@@ -40,9 +40,9 @@ BETTER_AUTH_FORCE_ENABLE_TWOFA = true
 NODEMAILER_HOST = smtp.ethereal.email
 NODEMAILER_PORT = 587
 # NODEMAILER_SECURE = true
-NODEMAILER_SMTP_USER = (check_the_docs)
-NODEMAILER_SMTP_USER_EMAIL = (check_the_docs)
-NODEMAILER_SMTP_PASSWORD = (check_the_docs)
+NODEMAILER_SMTP_USER = (check_the_nodemailer_docs)
+NODEMAILER_SMTP_USER_EMAIL = (check_the_nodemailer_docs)
+NODEMAILER_SMTP_PASSWORD = (check_the_nodemailer_docs)
 
 # --------------------------------------- #
 # DB

@@ -46,7 +46,17 @@ export const BASE_ERROR_CODES_FR = {
   MISSING_FIELD: "Ce champ est obligatoire",
   METHOD_NOT_ALLOWED_DEFER_SESSION_REQUIRED: "La méthode POST nécessite l'activation de deferSessionRefresh dans la configuration de la session",
   BODY_MUST_BE_AN_OBJECT: "Le corps de la requête doit être un objet",
-  PASSWORD_ALREADY_SET: "L'utilisateur a déjà un mot de passe configuré"
+  PASSWORD_ALREADY_SET: "L'utilisateur a déjà un mot de passe configuré",
+
+  OTP_NOT_ENABLED: "OTP non activé",
+  OTP_HAS_EXPIRED: "Le code OTP a expiré",
+  TOTP_NOT_ENABLED: "TOTP non activé",
+  TWO_FACTOR_NOT_ENABLED: "L'authentification à deux facteurs n'est pas activée",
+  BACKUP_CODES_NOT_ENABLED: "Les codes de secours ne sont pas activés",
+  INVALID_BACKUP_CODE: "Code de secours invalide",
+  INVALID_CODE: "Code invalide",
+  TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE: "Trop de tentatives. Veuillez demander un nouveau code.",
+  INVALID_TWO_FACTOR_COOKIE: "Cookie d'authentification à deux facteurs invalide",
 } as const;
 
 const BASE_ERROR_CODES_EN = {
@@ -107,5 +117,5 @@ const BASE_ERROR_CODES_EN = {
 	INVALID_BACKUP_CODE: "Invalid backup code",
 	INVALID_CODE: "Invalid code",
 	TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE: "Too many attempts. Please request a new code.",
-	INVALID_TWO_FACTOR_COOKIE: "Invalid two factor cookie"
+	INVALID_TWO_FACTOR_COOKIE: "Invalid two factor cookie",
 } as const;

@@ -12,6 +12,7 @@ import { returnJson, returnPage/*, returnRedirect*/ } from "../utils/server/resp
 //import { errors } from '../ressources/errors';
 import logger from "../utils/logger";
 
+// This is for socket (not implemented)
 /*const documentCache = new Map<string, any>();
 
 setInterval(async () => {
@@ -67,7 +68,7 @@ setInterval(async () => {
 }, 10000);
 
 /////////////////////////////////////
-// Set socket
+// This is for socket (not implemented)
 /*export const setTextsSocket = (
   socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
 ) => {
@@ -185,8 +186,10 @@ textsRouter.get("/", async (req: Request, res: Response) => {
 // GET new text (form) page
 textsRouter.get("/new", (req: Request, res: Response) => {
   try {
+    // This is for socket (not implemented)
     //const id = uuidv4();
     //return returnRedirect(res, '/texts/edit/' + id);
+
     return returnPage(res, 'layout_dashboard', 'texts/texts_add',
     {
       currentPage : 'texts',
@@ -204,6 +207,7 @@ textsRouter.get("/edit/:id", async (req: Request, res: Response) => {
   try {
     const id = escapeHTML(z.string().nonempty().parse(req.params.id));
 
+    // This is for socket (not implemented)
     /*return returnPage(res, 'layout_dashboard', 'texts/texts_edit',
     {
       currentPage: 'texts',

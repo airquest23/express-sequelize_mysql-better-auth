@@ -12,6 +12,7 @@ import { returnJson, returnPage/*, returnRedirect*/ } from '../utils/server/resp
 //import { errors } from '../ressources/errors';
 import logger from '../utils/logger';
 
+// This is for socket (not implemented)
 /*const documentCache = new Map<string, any>();
 
 setInterval(async () => {
@@ -73,7 +74,7 @@ setInterval(async () => {
 }, 10000);
 
 /////////////////////////////////////
-// Set socket
+// This is for socket (not implemented)
 /*export const setRichTextsSocket = (
   socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
 ) => {
@@ -165,14 +166,14 @@ richTextsRouter.get('/', async (req: Request, res: Response) => {
       where: { userId: res.locals.user.id },
       //raw: true,
     });
-
-    const plainTexts = texts.map(t => t.get({ plain: true }));
-
+    
     /*const fixedTexts = texts.map(text => ({
       ...text,
       content: typeof text.content === 'string' ? JSON.parse(text.content) : text.content
     }));*/
 
+    const plainTexts = texts.map(t => t.get({ plain: true }));
+    
     let lastLine: number = 100;
     
     if (plainTexts.length < limit) {
@@ -202,8 +203,10 @@ richTextsRouter.get('/', async (req: Request, res: Response) => {
 // GET new text (form) page
 richTextsRouter.get('/new', (req: Request, res: Response) => {
   try {
+    // This is for socket (not implemented)
     //const id = uuidv4();
     //return returnRedirect(res, '/rich-texts/edit/' + id);
+
     return returnPage(res, 'layout_dashboard', 'richTexts/rich_texts_add',
     {
       currentPage : 'rich_texts',
@@ -221,6 +224,7 @@ richTextsRouter.get('/edit/:id', async (req: Request, res: Response) => {
   try {
     const id = escapeHTML(z.string().nonempty().parse(req.params.id));
 
+    // This is for socket (not implemented)
     /*return returnPage(res, 'layout_dashboard', 'richTexts/rich_texts_edit_socket',
     {
       currentPage: 'rich_texts',
