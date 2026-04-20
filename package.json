@@ -1,6 +1,6 @@
 {
-  "name": "airquest-datacenter",
-  "description": "airquest-datacenter",
+  "name": "my-app",
+  "description": "Express, sequelize, mysql, better-auth boilerplate",
   "author": "airquest",
   "license": "ISC",
   "version": "1.0.0",
