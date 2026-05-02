@@ -27,7 +27,8 @@ setInterval(async () => {
       documentCache.delete(id);
 
       console.log(`Auto-saved document ${id} to DB`);
-    } catch (e) {
+    }
+    catch (e) {
       logger.error("Interval save failed", e);
     };
   };
@@ -61,7 +62,8 @@ setInterval(async () => {
       documentCache.delete(id);
       
       console.log(`Auto-saved document ${id} to DB`);
-    } catch (e) {
+    }
+    catch (e) {
       logger.error("Interval save failed", e);
     };
   };
@@ -119,7 +121,8 @@ setInterval(async () => {
           if (callback) callback({ status: "error" });
         };
       });
-    } catch(e) {
+    }
+    catch(e) {
       logger.error(e);
       throw e;
     };
@@ -227,7 +230,8 @@ textsRouter.get("/edit/:id", async (req: Request, res: Response) => {
         content: text?.content || "",
       },
     });
-  } catch(e) {
+  }
+  catch(e) {
     return handleError(e, res);
   };
 });
@@ -261,7 +265,8 @@ textsRouter.post("/insert", async (req: Request, res: Response) => {
         sc["417-Expectation-Failed"].description,
         sc["417-Expectation-Failed"].code
       );
-  } catch(e) {
+  }
+  catch(e) {
     return handleError(e, res);
   };
 });
@@ -280,7 +285,8 @@ textsRouter.put("/update/:id", async (req: Request, res: Response) => {
     const update = await Text.update(body, { where: { id: id } });
 
     return returnJson(res, {}, sc["202-Accepted"].code);
-  } catch(e) {
+  }
+  catch(e) {
     return handleError(e, res);
   };
 });
@@ -302,7 +308,8 @@ textsRouter.put("/auto-save/:id", async (req: Request, res: Response) => {
     });
 
     return returnJson(res, {}, sc["202-Accepted"].code);
-  } catch(e) {
+  }
+  catch(e) {
     return handleError(e, res);
   };
 });
@@ -315,7 +322,8 @@ textsRouter.delete("/delete/:id", async (req: Request, res: Response) => {
     const text = await getTextByPk(id, res.locals.language, res.locals.user);
     const deletion = await Text.destroy({ where: { id: id } });
     return returnJson(res, {}, sc["205-Reset-Content"].code);
-  } catch(e) {
+  }
+  catch(e) {
     return handleError(e, res);
   };
 });
@@ -340,7 +348,8 @@ textsRouter.post("/bulk-delete", async (req: Request, res: Response) => {
     const deletion = await Text.destroy({ where: { id: toDelete } });
     
     return returnJson(res, {}, sc["205-Reset-Content"].code);
-  } catch(e) {
+  }
+  catch(e) {
     return handleError(e, res);
   };
 });

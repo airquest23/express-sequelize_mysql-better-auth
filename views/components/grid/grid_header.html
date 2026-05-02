@@ -65,7 +65,7 @@
     <div
       id="resizeButton"
       data-bs-toggle="tooltip"
-      data-bs-title="@(#resizeCols)"
+      data-bs-title="@(#resize)"
       data-bs-placement="top"
     >
       <button
@@ -73,7 +73,7 @@
         class="btn btn-sm ms-1"
         data-bs-toggle="modal"
         data-bs-target="#resizeModal"
-        aria-label="@(#resizeCols)"
+        aria-label="@(#resize)"
       ><i class="bi bi-arrows"></i></button>
       
       <!-- Modal -->
@@ -81,7 +81,7 @@
         _path: '~components/modal_dialog',
         id: 'resizeModal',
         labelId: 'resizeModalLabel',
-        title: "@(#resizeCols)",
+        title: "@(#resize)",
         bodyId: 'resizeModalBody',
         closeLabel: "@(#close)"
       })}
@@ -91,7 +91,7 @@
     <div
       id="reorderButton"
       data-bs-toggle="tooltip"
-      data-bs-title="@(#reorderCols)"
+      data-bs-title="@(#reorder)"
       data-bs-placement="top"
     >
       <button
@@ -99,7 +99,7 @@
         class="btn btn-sm ms-1"
         data-bs-toggle="modal"
         data-bs-target="#reorderModal"
-        aria-label="@(#reorderCols)"
+        aria-label="@(#reorder)"
       ><i class="bi bi-arrow-left-right"></i></button>
       
       <!-- Modal -->
@@ -107,7 +107,7 @@
         _path: '~components/modal_dialog',
         id: 'reorderModal',
         labelId: 'reorderModalLabel',
-        title: "@(#reorderCols)",
+        title: "@(#reorder)",
         bodyId: 'reorderModalBody',
         closeLabel: "@(#close)"
       })}

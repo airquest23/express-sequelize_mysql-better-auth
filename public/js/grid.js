@@ -72,14 +72,27 @@
 */
 
 /**
-* @typedef {Object} Resize
+* @typedef {Object} Sort
+* @property {String} label - Sort label
+*/
+
+/**
+* @typedef {Object} Hide
+* @property {String} id - Hide dropdown ID
+* @property {String} label - Hide label
+*/
+
+/**
+* @typedef {Object} Reorder
+* @property {Boolean} dragDrop - Enable drag and drop
 * @property {String} buttonId - Button ID
 * @property {String} modalId - Modal ID
 * @property {String} modalBodyId - Modal body ID
 */
 
 /**
-* @typedef {Object} Reorder
+* @typedef {Object} Resize
+* @property {Boolean} dragDrop - Enable drag and drop
 * @property {String} buttonId - Button ID
 * @property {String} modalId - Modal ID
 * @property {String} modalBodyId - Modal body ID
@@ -128,10 +141,26 @@ const KEY_COLUMNS_ORDER = 'columnsOrder';
 ////
 /** Grid class */
 class Grid {
+  /** @type {Number} Default limit per page */
+  #defaultPageLimit = DEFAULT_PAGE_LIMIT;
+  /** @type {Number} Default nr. of columns */
+  #defaultNrOfCols = DEFAULT_NR_OF_COLS;
+  /** @type {Number} Resize columns increment */
+  #resizeColsIncrement = DEFAULT_RESIZE_COLS_INCREMENT;
+  /** @type {String} Active className */
+  #classTableActive = CLASS_TABLE_ACTIVE;
+  /** @type {String} Selected className */
+  #classTableSelected = CLASS_TABLE_SELECTED;
+
   /** @type {Object|Object[]} Selected objects */
   #selectedObjects = null;
   /** @type {Column[]} Displayed columns (after hiding and ordering) */
   #displayedColumns = [];
+  /** @type {Number} Data length before pagination */
+  #dataLengthBeforePagination = null;
+
+  /** @type {Boolean} Is mode listView ? */
+  #isListView = false;
 
   /** @type {Number} Key navigation index */
   #currentIndex = null/*-1*/;
@@ -144,24 +173,16 @@ class Grid {
   /** @type {Boolean} Sort ascending */
   #sortAsc = true;
 
-  /** @type {Boolean} Is mode listView ? */
-  #isListView = false;
+  /** @type {HTMLElement} ResizingTH */
+  #resizingTh = null;
+  /** @type {Number} ResizingTH */
+  #resizingStartOffset = 0;
 
-  /** @type {Number} Data length before pagination */
-  #dataLengthBeforePagination = null;
+  /** @type {String} Reorder drag index (column key) */
+  #reorderDragIndex = null;
+  /** @type {String} Reorder drop position ('before' / 'after') */
+  #reorderDropPosition = null;
 
-  /** @type {String} Active className */
-  #classTableActive = CLASS_TABLE_ACTIVE;
-  /** @type {String} Selected className */
-  #classTableSelected = CLASS_TABLE_SELECTED;
-
-  /** @type {Number} Default limit per page */
-  #defaultPageLimit = DEFAULT_PAGE_LIMIT;
-  /** @type {Number} Default nr. of columns */
-  #defaultNrOfCols = DEFAULT_NR_OF_COLS;
-  /** @type {Number} Resize columns increment */
-  #resizeColsIncrement = DEFAULT_RESIZE_COLS_INCREMENT;
-  
   /////////////////////////////////////////
   /////////////////////////////////////////
   /////////////////////////////////////////
@@ -314,21 +335,14 @@ class Grid {
 
     ////////////////////// Sort
     if(params.sort)
-      /** @type {Boolean} - Enable sorting */
+      /** @type {Sort} - Sort configuration object */
       this.sort = params.sort;
     
     ////////////////////// Hide
-    if(params.hideId) {
-      /** @type {String} - Hide dropdown Ul ID */
-      this.hide = params.hideId;
+    if(params.hide) {
+      /** @type {Hide} - Hide configuration object */
+      this.hide = params.hide;
       this.#addHide();
-    };
-
-    ////////////////////// Resize
-    if (params.resize) {
-      /** @type {Resize} - Resize configuration object */
-      this.resize = params.resize;
-      this.#addResize();
     };
 
     ////////////////////// Reorder
@@ -336,6 +350,13 @@ class Grid {
       /** @type {Reorder} - Reorder configuration object */
       this.reorder = params.reorder;
       this.#addReorder();
+    };
+
+    ////////////////////// Resize
+    if (params.resize) {
+      /** @type {Resize} - Resize configuration object */
+      this.resize = params.resize;
+      this.#addResize();
     };
 
     ////////////////////// ListView
@@ -747,7 +768,11 @@ class Grid {
   #addSortForListView() {
     const sortListView = document.getElementById(this.listView.sortId);
     sortListView.innerHTML = '';
-
+    
+    DOM.create('li').class('list-group-item').appendTo(sortListView)
+      .addChild('div').class('w-100 d-flex justify-content-center')
+      .text(this.sort.label);
+    
     this.columns.forEach(column => {
       if (column.doNotSort) return;
       if (column.isHidden) return;
@@ -773,6 +798,7 @@ class Grid {
             this.renderTable();
             const buttons = sortListView.querySelectorAll('button');
             buttons.forEach(button => {
+              if (button.ariaLabel) return;
               if (!button.classList.contains('d-none'))
                 button.classList.add('d-none');
               button.innerHTML = '<i class="bi bi-sort-down-alt"></i>';
@@ -780,7 +806,7 @@ class Grid {
             DOM(input).next().toggle('d-none');
           })
           
-          .add('button').class('btn btn-sm me-2')
+          .add('button').class('btn btn-sm')
           .condition(this.#sortKey !== column.id)
           .classes.add('d-none')
 
@@ -820,6 +846,12 @@ class Grid {
           this.renderTable();
           const inputs = sortListView.querySelectorAll('input');
           inputs.forEach(input => input.checked = false);
+          const buttons = sortListView.querySelectorAll('button');
+          buttons.forEach(button => {
+            if (button.ariaLabel) return;
+            if (!button.classList.contains('d-none'))
+              button.classList.add('d-none');
+          });
         });
   };
   
@@ -842,7 +874,11 @@ class Grid {
   /////////////////////////////////////////
   // Hide columns
   #addHide() {
-    const hideDD = document.getElementById(this.hide);
+    const hideDD = document.getElementById(this.hide.id);
+
+    DOM.create('li').class('list-group-item').appendTo(hideDD)
+      .addChild('div').class('w-100 d-flex justify-content-center')
+      .text(this.hide.label);
     
     this.columns.forEach(column => {
       if (column.doNotHide) return;
@@ -875,7 +911,7 @@ class Grid {
     });
 
     // Reset button
-    DOM.create('li').appendTo(hideDD)
+    DOM.create('li').class('list-group-item').appendTo(hideDD)
       .addChild('div').class('w-100 d-flex justify-content-center')
         .addChildSet('button', {
           type: 'button',
@@ -894,6 +930,176 @@ class Grid {
           this.#removeStorageValue(KEY_DISPLAYED_COLUMNS);
           hideDD.innerHTML = '';
           this.#addHide();
+        });
+  };
+
+
+  /////////////////////////////////////////
+  /////////////////////////////////////////
+  /////////////////////////////////////////
+  // Reorder columns
+  #addReorder() {
+    const modal = document.getElementById(this.reorder.modalBodyId);
+    const ul = document.createElement('ul');
+    modal.appendChild(ul);
+    ul.setAttribute('class', 'list-group');
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.addEventListener('show.bs.modal', (e) => {
+        if (e.target.id !== this.reorder.modalId) return;
+        this.#setReorderModal(ul);
+      });
+    });
+  };
+
+  ////////////////
+  #setReorderModal(ul) {
+    const disabledClass = 'disabled';
+    ul.innerHTML = '';
+
+    /*if(this.reorder.dragDrop) {
+      // Reset button
+      DOM.create('li').class('list-group-item').appendTo(ul)
+        .addChild('div').class('w-100 d-flex justify-content-center')
+          .addChildSet('button', {
+            type: 'button',
+            class: 'btn',
+            ariaLabel: 'Reset',
+            html: `<i class="bi bi-x-octagon"></i>`,
+          })
+          .event('click', () => {
+            this.#removeStorageValue(KEY_COLUMNS_ORDER);
+
+            for (let i = 0, l = this.columns.length; i < l; i++) {
+              this.columns[i].order = i;
+            };
+            
+            this.#setDisplayedColumns();
+            this.renderTable();
+            this.#setReorderModal(ul);
+          });
+      return;
+    };*/
+
+    for (let i = 0, l = this.#displayedColumns.length; i < l; i++) {
+      const column = this.#displayedColumns[i];
+      const li = {};
+
+      DOM.create('li').class('list-group-item').appendTo(ul).saveGlobal(li)
+        .addChild('div').class('d-flex justify-content-between align-items-center')
+
+          .addChildSet('label', {
+            class: 'form-label',
+            for: `reorder_col_${column.id}`,
+            text: column.name,
+          })
+
+          .add('div').class('d-flex align-items-center')
+
+            // Button down = move column right
+            .addChildSet('button', {
+              type: 'button',
+              class: 'btn btn-outline-secondary btn-sm me-2 btn-dn',
+              html: `<i class="bi bi-arrow-bar-down"></i>`,
+            })
+            .condition(i === this.#displayedColumns.length - 1, true)
+            .classes.add(disabledClass)
+            .disable()
+            .cancelCondition()
+            .event('click', (buttonDown) => {
+              const dummy = [...this.columns].sort((a, b) => a.order - b.order);
+              const dummyIdx = dummy.findIndex(col => col.id === column.id);
+
+              // Find next index that is not hidden
+              let nextId = null;
+              for (let i = dummyIdx + 1; i < dummy.length; i++) {
+                const col = dummy[i];
+                if (!col.isHidden) {
+                  nextId = col.id;
+                  break;
+                };
+              };
+
+              const firstIdx = this.columns.findIndex(col => col.id === column.id);
+              const nextIdx = this.columns.findIndex(col => col.id === nextId);
+
+              const firstOrder = this.columns[firstIdx].order;
+              const nextOrder = this.columns[nextIdx].order;
+
+              this.columns[firstIdx].order = nextOrder;
+              this.columns[nextIdx].order = firstOrder;
+              
+              this.#setDisplayedColumns();
+              this.renderTable();
+              this.#setReorderModal(ul);
+
+              this.#setStorageValue(KEY_COLUMNS_ORDER, JSON.stringify(
+                this.columns.map(col => { return { id: col.id, order: col.order} })
+              ));
+            })
+
+            // Button up = move column left
+            .addAfterSet('button', {
+              type: 'button',
+              class: 'btn btn-outline-secondary btn-sm btn-up',
+              html: `<i class="bi bi-arrow-bar-up"></i>`,
+            })
+            .condition(i === 0, true)
+            .classes.add(disabledClass)
+            .disable()
+            .cancelCondition()
+            .event('click', (buttonUp) => {
+              const dummy = [...this.columns].sort((a, b) => a.order - b.order);
+              const dummyIdx = dummy.findIndex(col => col.id === column.id);
+              
+              // Find previous index that is not hidden
+              let prevId = null;
+              for (let i = dummyIdx - 1; i >= 0; i--) {
+                const col = dummy[i];
+                if (!col.isHidden) {
+                  prevId = col.id;
+                  break;
+                };
+              };
+              
+              const lastIdx = this.columns.findIndex(col => col.id === column.id);
+              const prevIdx = this.columns.findIndex(col => col.id === prevId);
+
+              const lastOrder = this.columns[lastIdx].order;
+              const prevOrder = this.columns[prevIdx].order;
+
+              this.columns[lastIdx].order = prevOrder;
+              this.columns[prevIdx].order = lastOrder;
+              
+              this.#setDisplayedColumns();
+              this.renderTable();
+              this.#setReorderModal(ul);
+
+              this.#setStorageValue(KEY_COLUMNS_ORDER, JSON.stringify(
+                this.columns.map(col => { return { id: col.id, order: col.order} })
+              ));
+            });
+    };
+
+    // Reset button
+    DOM.create('li').class('list-group-item').appendTo(ul)
+      .addChild('div').class('w-100 d-flex justify-content-center')
+        .addChildSet('button', {
+          type: 'button',
+          class: 'btn',
+          ariaLabel: 'Reset',
+          html: `<i class="bi bi-x-octagon"></i>`,
+        })
+        .event('click', () => {
+          this.#removeStorageValue(KEY_COLUMNS_ORDER);
+
+          for (let i = 0, l = this.columns.length; i < l; i++) {
+            this.columns[i].order = i;
+          };
+          
+          this.#setDisplayedColumns();
+          this.renderTable();
+          this.#setReorderModal(ul);
         });
   };
   
@@ -923,6 +1129,24 @@ class Grid {
     const thead = table.querySelector('thead');
     const thead_cells = thead.querySelectorAll('th');
     
+    if(this.resize.dragDrop) {
+      // Reset button
+      DOM.create('li').class('list-group-item').appendTo(ul)
+        .addChild('div').class('w-100 d-flex justify-content-center')
+          .addChildSet('button', {
+            type: 'button',
+            class: 'btn',
+            ariaLabel: 'Reset',
+            html: '<i class="bi bi-x-octagon"></i>'
+          })
+          .event('click', () => {
+            this.#clearSizes();
+            this.renderTable();
+            this.#setResizeModal(ul);
+          });
+      return;
+    };
+
     let headerColsWidths = [];
     let checkNotInit = false;
     for (let i = 0, l = thead_cells.length; i < l; i++) {
@@ -1024,7 +1248,6 @@ class Grid {
   ////////////////
   #clearSizes() {
     this.#removeStorageValue(KEY_COLUMNS_SIZES);
-
     for (let i = 0, l = this.columns.length; i < l; i++) {
       this.columns[i].width = undefined;
     };
@@ -1120,151 +1343,12 @@ class Grid {
       colObj.width = Number(newHeaderColsWidth[i]);
     };
 
-    this.#setStorageValue(KEY_COLUMNS_SIZES, JSON.stringify(
-      this.columns.map(col => { return { id: col.id, width: col.width} })
-    ));
-  };
-  
-  /////////////////////////////////////////
-  /////////////////////////////////////////
-  /////////////////////////////////////////
-  // Reorder columns
-  #addReorder() {
-    const modal = document.getElementById(this.reorder.modalBodyId);
-    const ul = document.createElement('ul');
-    modal.appendChild(ul);
-    ul.setAttribute('class', 'list-group');
-
-    document.addEventListener("DOMContentLoaded", () => {
-      document.addEventListener('show.bs.modal', (e) => {
-        if (e.target.id !== this.reorder.modalId) return;
-        this.#setReorderModal(ul);
-      });
-    });
-  };
-
-  ////////////////
-  #setReorderModal(ul) {
-    const disabledClass = 'disabled';
-    ul.innerHTML = '';
-
-    for (let i = 0, l = this.#displayedColumns.length; i < l; i++) {
-      const column = this.#displayedColumns[i];
-      const li = {};
-
-      DOM.create('li').class('list-group-item').appendTo(ul).saveGlobal(li)
-        .addChild('div').class('d-flex justify-content-between align-items-center')
-
-          .addChildSet('label', {
-            class: 'form-label',
-            for: `reorder_col_${column.id}`,
-            text: column.name,
-          })
-
-          .add('div').class('d-flex align-items-center')
-
-            .addChildSet('button', {
-              type: 'button',
-              class: 'btn btn-outline-secondary btn-sm me-2 btn-dn',
-              html: `<i class="bi bi-arrow-bar-down"></i>`,
-            })
-            .condition(i === this.#displayedColumns.length - 1, true)
-            .classes.add(disabledClass)
-            .disable()
-            .cancelCondition()
-            .event('click', (buttonDown) => {
-              const dummy = [...this.columns].sort((a, b) => a.order - b.order);
-              const dummyIdx = dummy.findIndex(col => col.id === column.id);
-
-              // Find next index that is not hidden
-              let nextId = null;
-              for (let i = dummyIdx + 1; i < dummy.length; i++) {
-                const col = dummy[i];
-                if (!col.isHidden) {
-                  nextId = col.id;
-                  break;
-                };
-              };
-              const firstIdx = this.columns.findIndex(col => col.id === column.id);
-              const nextIdx = this.columns.findIndex(col => col.id === nextId);
-
-              const firstOrder = this.columns[firstIdx].order;
-              const nextOrder = this.columns[nextIdx].order;
-
-              this.columns[firstIdx].order = nextOrder;
-              this.columns[nextIdx].order = firstOrder;
-              
-              this.#setDisplayedColumns();
-              this.renderTable();
-              this.#setReorderModal(ul);
-
-              this.#setStorageValue(KEY_COLUMNS_ORDER, JSON.stringify(
-                this.columns.map(col => { return { id: col.id, order: col.order} })
-              ));
-            })
-
-            .addAfterSet('button', {
-              type: 'button',
-              class: 'btn btn-outline-secondary btn-sm btn-up',
-              html: `<i class="bi bi-arrow-bar-up"></i>`,
-            })
-            .condition(i === 0, true)
-            .classes.add(disabledClass)
-            .disable()
-            .cancelCondition()
-            .event('click', (buttonUp) => {
-              const dummy = [...this.columns].sort((a, b) => a.order - b.order);
-              const dummyIdx = dummy.findIndex(col => col.id === column.id);
-              
-              // Find next index that is not hidden
-              let prevId = null;
-              for (let i = dummyIdx - 1; i >= 0; i--) {
-                const col = dummy[i];
-                if (!col.isHidden) {
-                  prevId = col.id;
-                  break;
-                };
-              };
-              
-              const lastIdx = this.columns.findIndex(col => col.id === column.id);
-              const prevIdx = this.columns.findIndex(col => col.id === prevId);
-
-              const lastOrder = this.columns[lastIdx].order;
-              const prevOrder = this.columns[prevIdx].order;
-
-              this.columns[lastIdx].order = prevOrder;
-              this.columns[prevIdx].order = lastOrder;
-              
-              this.#setDisplayedColumns();
-              this.renderTable();
-              this.#setReorderModal(ul);
-
-              this.#setStorageValue(KEY_COLUMNS_ORDER, JSON.stringify(
-                this.columns.map(col => { return { id: col.id, order: col.order} })
-              ));
-            });
+    let storageObj = [];
+    for (let i = 0; i < this.columns.length; i++) {
+      if (this.columns[i].width)
+        storageObj.push({ id: this.columns[i].id, width: this.columns[i].width });
     };
-
-    // Reset button
-    DOM.create('li').class('list-group-item').appendTo(ul)
-      .addChild('div').class('w-100 d-flex justify-content-center')
-        .addChildSet('button', {
-          type: 'button',
-          class: 'btn',
-          ariaLabel: 'Reset',
-          html: `<i class="bi bi-x-octagon"></i>`,
-        })
-        .event('click', () => {
-          this.#removeStorageValue(KEY_COLUMNS_ORDER);
-
-          for (let i = 0, l = this.columns.length; i < l; i++) {
-            this.columns[i].order = i;
-          };
-          
-          this.#setDisplayedColumns();
-          this.renderTable();
-          this.#setReorderModal(ul);
-        });
+    this.#setStorageValue(KEY_COLUMNS_SIZES, JSON.stringify(storageObj));
   };
   
   /////////////////////////////////////////
@@ -1419,53 +1503,218 @@ class Grid {
     /////////////////////////////////////////
     // Render table header
     const thead = document.createElement('thead');
-    table.appendChild(thead);
-    
     const thead_tr = document.createElement('tr');
-    thead.appendChild(thead_tr);
-
+    
+    /////////////////////////////////////////
+    // Loop through columns
     this.#displayedColumns.forEach(column => {
       const th = document.createElement('th');
-      thead_tr.appendChild(th);
       th.setAttribute('data-key', column.id);
 
-      if (this.resize && column.width) {
-        if (thead_tr.style.wordBreak !== 'break-all')
-          thead_tr.style.wordBreak = 'break-all';
-        th.style.width = column.width + '%';
+      let container;
+      let textContainer;
+
+      if (
+        (this.sort && !column.doNotSort && this.#sortKey === column.id) ||
+        (this.reorder && this.reorder.dragDrop) ||
+        (this.resize  && this.resize.dragDrop)
+      ) {
+        container = document.createElement('div');
+        container.setAttribute('class', 'd-flex');
+
+        textContainer = document.createElement('div');
+        textContainer.setAttribute('class', 'flex-grow-1');
+        textContainer.innerText = column.name;
+
+        /////////////////////////////////////////
+        // Add sorting events
+        if (this.sort && !column.doNotSort)
+          textContainer.addEventListener('click', () => {
+            const key = column.id;
+            this.#sortAsc = this.#sortKey === key ? !this.#sortAsc : true;
+            this.#sortKey = key;
+            this.renderTable();
+            this.#addSortForListView();
+          });
+        
+        container.appendChild(textContainer);
+      } else {
+        th.innerText = column.name;
       };
-      
+
       /////////////////////////////////////////
       // Add sorting style
       if (this.sort && !column.doNotSort && this.#sortKey === column.id) {
         const icon = this.#sortAsc ? 'bi-sort-down-alt' : 'bi-sort-up';
-        th.innerHTML = `
-          <div class="d-flex align-items-center justify-content-between">
-            ${column.name}
-            <i class="bi ${icon} mx-2"></i>
-          </div>
-        `;
-      } else {
-        th.textContent = column.name;
-      };
-      
-      /////////////////////////////////////////
-      // Add sorting events
-      if (this.sort && !column.doNotSort) {
-        th.addEventListener('click', () => {
-          const key = th.dataset.key;
+        const sortIcon = document.createElement('i');
+        sortIcon.setAttribute('class', 'bi ' + icon);
+        sortIcon.setAttribute('style', 'margin-right: 8px;');
+
+        sortIcon.addEventListener('click', () => {
+          const key = column.id;
           this.#sortAsc = this.#sortKey === key ? !this.#sortAsc : true;
           this.#sortKey = key;
           this.renderTable();
           this.#addSortForListView();
         });
+
+        container.appendChild(sortIcon);
       };
+      
+      /////////////////////////////////////////
+      // Add reorder
+      if (this.reorder && this.reorder.dragDrop) {
+        textContainer.setAttribute('draggable', 'true');
+
+        textContainer.addEventListener('dragstart', (e) => {
+          this.#reorderDragIndex = column.id;
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', this.#reorderDragIndex);
+        });
+
+        th.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          const rect = th.getBoundingClientRect();
+          const midpoint = rect.left + rect.width / 2;
+          const isLeft = e.clientX < midpoint;
+          this.#reorderDropPosition = isLeft ? 'before' : 'after';
+          th.classList.toggle('reorderBefore', isLeft);
+          th.classList.toggle('reorderAfter', !isLeft);
+          th.classList.add('reorderDragOver');
+        });
+        
+        th.addEventListener('dragleave', () => {
+          th.classList.remove('reorderBefore', 'reorderAfter', 'reorderDragOver');
+        });
+        
+        th.addEventListener('drop', (e) => {
+          e.preventDefault();
+
+          th.classList.remove('reorderBefore', 'reorderAfter', 'reorderDragOver');
+          const dragTargetIndex = column.id;
+          const position = this.#reorderDropPosition;
+
+          if (
+            !this.#reorderDragIndex || !dragTargetIndex || !position ||
+            this.#reorderDragIndex === dragTargetIndex
+          ) return;
+
+          const draggedIdx = this.columns.findIndex(col => col.id === this.#reorderDragIndex);
+          const targetIdx = this.columns.findIndex(col => col.id === dragTargetIndex);
+          
+          const draggedOrder = this.columns[draggedIdx].order;
+          const targetOrder = this.columns[targetIdx].order;
+
+          if (position === 'before') {
+            for (let i = 0; i < this.columns.length; i++) {
+              if (this.columns[i].order === draggedOrder)
+                this.columns[i].order = targetOrder - 1;
+              else if (this.columns[i].order < targetOrder)
+                this.columns[i].order = this.columns[i].order - 1;
+            };
+          }
+          else if (position === 'after') {
+            for (let i = 0; i < this.columns.length; i++) {
+              if (this.columns[i].order === targetOrder)
+                this.columns[i].order = targetOrder - 1;
+              else if (this.columns[i].order < targetOrder)
+                this.columns[i].order = this.columns[i].order - 1;
+            };
+            this.columns[draggedIdx].order = targetOrder;
+          };
+          
+          this.#setDisplayedColumns();
+          this.renderTable();
+
+          this.#setStorageValue(KEY_COLUMNS_ORDER, JSON.stringify(
+            this.columns.map(col => { return { id: col.id, order: col.order} })
+          ));
+          
+          this.#reorderDragIndex = null;
+          this.#reorderDropPosition = null;
+        });
+      };
+      
+      /////////////////////////////////////////
+      // Add resize
+      if (this.resize) {
+        if (this.resize.dragDrop) {
+          const resizeGrip = document.createElement('div');
+          resizeGrip.innerHTML = "&nbsp;";
+          resizeGrip.setAttribute('class', 'resizingGrip');
+
+          resizeGrip.addEventListener('mousedown', (e) => {
+            this.#resizingTh = th;
+            this.#resizingStartOffset = th.offsetWidth - e.pageX;
+          });
+
+          resizeGrip.addEventListener('touchstart', (e) => {
+            this.#resizingTh = th;
+            this.#resizingStartOffset = th.offsetWidth - e.touches[0].pageX;
+          }, { passive: true });
+
+          container.appendChild(resizeGrip);
+        };
+
+        if (column.width) {
+          if (this.resize.dragDrop)
+            th.style.width = column.width + 'px';
+          else
+            th.style.width = column.width + '%';
+        };
+      };
+
+      if (container)
+        th.appendChild(container);
+
+      thead_tr.appendChild(th);
     });
+
+    /////////////////////////////////////////
+    // Add global document / table events
+    if (this.resize) {
+      table.addEventListener('mousemove', (e) => {
+        if (!this.#resizingTh) return;
+        this.#resizingTh.style.width = this.#resizingStartOffset + e.pageX + 'px';
+      });
+
+      table.addEventListener('touchmove', (e) => {
+        if (!this.#resizingTh) return;
+        this.#resizingTh.style.width = this.#resizingStartOffset + e.touches[0].pageX + 'px';
+      }, { passive: true });
+
+      document.addEventListener('mouseup', (e) => {
+        if (!this.#resizingTh) return;
+        const key = this.#resizingTh.dataset.key;
+        const idx = this.columns.findIndex(v => v[this.uuidProp] === key);
+        this.columns[idx].width = parseInt(this.#resizingTh.style.width.replace('px', ''));
+        let storageObj = [];
+        for (let i = 0; i < this.columns.length; i++) {
+          if (this.columns[i].width)
+            storageObj.push({ id: this.columns[i].id, width: this.columns[i].width });
+        };
+        this.#setStorageValue(KEY_COLUMNS_SIZES, JSON.stringify(storageObj));
+        this.#resizingTh = undefined;
+      });
+
+      document.addEventListener('touchend', (e) => {
+        if (!this.#resizingTh) return;
+        const key = this.#resizingTh.dataset.key;
+        const idx = this.columns.findIndex(v => v[this.uuidProp] === key);
+        this.columns[idx].width = parseInt(this.#resizingTh.style.width.replace('px', ''));
+        let storageObj = [];
+        for (let i = 0; i < this.columns.length; i++) {
+          if (this.columns[i].width)
+            storageObj.push({ id: this.columns[i].id, width: this.columns[i].width });
+        };
+        this.#setStorageValue(KEY_COLUMNS_SIZES, JSON.stringify(storageObj));
+        this.#resizingTh = undefined;
+      }, { passive: true });
+    };
     
     /////////////////////////////////////////
     // Render table body
     const tbody = document.createElement('tbody');
-    table.appendChild(tbody);
     
     data.forEach(row => {
       const tbody_tr = document.createElement('tr');
@@ -1478,10 +1727,10 @@ class Grid {
 
         if (!key || key === this.uuidProp) return;
         
-        if (this.resize && column.width && tbody_tr.style.wordBreak !== 'break-all') {
+        /*if (this.resize && column.width && tbody_tr.style.wordBreak !== 'break-all') {*/
           tbody_tr.style.wordBreak = 'break-all';
-        };
-
+        /*};*/
+        
         // Here you can format / style the cell
         const td = document.createElement('td');
         tbody_tr.appendChild(td);
@@ -1521,6 +1770,11 @@ class Grid {
         this.#addSelectionStyleAndEvents(tbody_tr);
       };
     });
+
+    /////////////////////////////////////////
+    thead.appendChild(thead_tr);
+    table.appendChild(thead);
+    table.appendChild(tbody);
     
     /////////////////////////////////////////
     // Render pagination

@@ -44,6 +44,27 @@ tr {
   transition: opacity 0.618s ease;
 }
 
+.resizingGrip {
+  width: 7px;
+  cursor: col-resize;
+}
+
+.resizingGrip:hover {
+  background-color: var(--bs-primary-border-subtle);
+}
+
+.reorderDragOver {
+  background-color: rgba(var(--bs-emphasis-color-rgb), 0.075) !important;
+}
+
+.reorderBefore {
+  border-left: 5px solid var(--bs-primary-border-subtle) !important;
+}
+
+.reorderAfter {
+  border-right: 5px solid var(--bs-primary-border-subtle) !important;
+}
+
 .limitInput {
   width: 80px;
   padding: 0.375rem 0.75rem;

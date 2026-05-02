@@ -545,13 +545,21 @@ export const ressources: { [key: string]: string[] } = {
     'Cacher',
     'Hide'
   ],
+  resize: [
+    'Redimensionner',
+    'Resize'
+  ],
   resizeCols: [
     'Redimensionner les colonnes',
     'Resize columns'
   ],
+  reorder: [
+    'Ordonner',
+    'Reorder'
+  ],
   reorderCols: [
     'Ordonner les colonnes',
-    'Resize columns'
+    'Reorder columns'
   ],
   clearSelection: [
     'Effacer la sélection',

@@ -69,14 +69,21 @@ const gridOptions = {
     id: 'gridSearch',
     cancel: 'cancelSearch',
   },
-  sort: true,
-  hideId: 'hideDD',
+  sort: {
+    label: "@(#sort)",
+  },
+  hide: {
+    id: 'hideDD',
+    /*label: "@(#hide)",*/
+  },
   resize: {
+    dragDrop: true,
     buttonId: 'resizeButton',
     modalId: 'resizeModal',
     modalBodyId: 'resizeModalBody',
   },
   reorder: {
+    dragDrop: true,
     buttonId: 'reorderButton',
     modalId: 'reorderModal',
     modalBodyId: 'reorderModalBody',

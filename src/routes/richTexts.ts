@@ -27,7 +27,8 @@ setInterval(async () => {
       documentCache.delete(id);
 
       console.log(`Auto-saved document ${id} to DB`);
-    } catch (e) {
+    }
+    catch (e) {
       logger.error("Interval save failed", e);
     };
   };
@@ -67,7 +68,8 @@ setInterval(async () => {
       documentCache.delete(id);
       
       console.log(`Auto-saved document ${id} to DB`);
-    } catch (e) {
+    }
+    catch (e) {
       logger.error("Interval save failed", e);
     };
   };
@@ -129,7 +131,8 @@ setInterval(async () => {
           if (callback) callback({ status: "error" });
         };
       });
-    } catch(e) {
+    }
+    catch(e) {
       logger.error(e);
       throw e;
     };
@@ -161,7 +164,7 @@ richTextsRouter.get('/', async (req: Request, res: Response) => {
       const pageNumber = z.number().min(1).parse(parseInt(pageQuery));
       page = pageNumber;
     };
-
+    
     const texts = await RichText.findAll({
       where: { userId: res.locals.user.id },
       //raw: true,
@@ -244,7 +247,8 @@ richTextsRouter.get('/edit/:id', async (req: Request, res: Response) => {
         content: parseDBObject(text?.content) || "",
       },
     });
-  } catch(e) {
+  }
+  catch(e) {
     return handleError(e, res);
   };
 });
@@ -278,7 +282,8 @@ richTextsRouter.post("/insert", async (req: Request, res: Response) => {
         sc["417-Expectation-Failed"].description,
         sc["417-Expectation-Failed"].code
       );
-  } catch(e) {
+  }
+  catch(e) {
     return handleError(e, res);
   };
 });
@@ -297,7 +302,8 @@ richTextsRouter.put("/update/:id", async (req: Request, res: Response) => {
     const update = await RichText.update(body, { where: { id: id } });
 
     return returnJson(res, {}, sc["202-Accepted"].code);
-  } catch(e) {
+  }
+  catch(e) {
     return handleError(e, res);
   };
 });
@@ -319,7 +325,8 @@ richTextsRouter.put("/auto-save/:id", async (req: Request, res: Response) => {
     });
 
     return returnJson(res, {}, sc["202-Accepted"].code);
-  } catch(e) {
+  }
+  catch(e) {
     return handleError(e, res);
   };
 });
@@ -332,7 +339,8 @@ richTextsRouter.delete('/delete/:id', async (req: Request, res: Response) => {
     const text = await getTextByPk(id, res.locals.language, res.locals.user);
     const deletion = await RichText.destroy({ where: { id: id } });
     return returnJson(res, {}, sc['205-Reset-Content'].code);
-  } catch(e) {
+  }
+  catch(e) {
     return handleError(e, res);
   };
 });
@@ -357,7 +365,8 @@ richTextsRouter.post('/bulk-delete', async (req: Request, res: Response) => {
     const deletion = await RichText.destroy({ where: { id: toDelete } });
     
     return returnJson(res, {}, sc['205-Reset-Content'].code);
-  } catch(e) {
+  }
+  catch(e) {
     return handleError(e, res);
   };
 });
