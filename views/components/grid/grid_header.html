@@ -61,32 +61,6 @@
       <ul class="dropdown-menu" id="hideDD"></ul>
     </div>
 
-    <!-- RESIZE COLUMNS -->
-    <div
-      id="resizeButton"
-      data-bs-toggle="tooltip"
-      data-bs-title="@(#resize)"
-      data-bs-placement="top"
-    >
-      <button
-        type="button"
-        class="btn btn-sm ms-1"
-        data-bs-toggle="modal"
-        data-bs-target="#resizeModal"
-        aria-label="@(#resize)"
-      ><i class="bi bi-arrows"></i></button>
-      
-      <!-- Modal -->
-      @{component({
-        _path: '~components/modal_dialog',
-        id: 'resizeModal',
-        labelId: 'resizeModalLabel',
-        title: "@(#resize)",
-        bodyId: 'resizeModalBody',
-        closeLabel: "@(#close)"
-      })}
-    </div>
-
     <!-- REORDER COLUMNS -->
     <div
       id="reorderButton"
@@ -109,6 +83,32 @@
         labelId: 'reorderModalLabel',
         title: "@(#reorder)",
         bodyId: 'reorderModalBody',
+        closeLabel: "@(#close)"
+      })}
+    </div>
+
+    <!-- RESIZE COLUMNS -->
+    <div
+      id="resizeButton"
+      data-bs-toggle="tooltip"
+      data-bs-title="@(#resize)"
+      data-bs-placement="top"
+    >
+      <button
+        type="button"
+        class="btn btn-sm ms-1"
+        data-bs-toggle="modal"
+        data-bs-target="#resizeModal"
+        aria-label="@(#resize)"
+      ><i class="bi bi-arrows"></i></button>
+      
+      <!-- Modal -->
+      @{component({
+        _path: '~components/modal_dialog',
+        id: 'resizeModal',
+        labelId: 'resizeModalLabel',
+        title: "@(#resize)",
+        bodyId: 'resizeModalBody',
         closeLabel: "@(#close)"
       })}
     </div>

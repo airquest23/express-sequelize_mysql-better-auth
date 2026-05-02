@@ -92,6 +92,7 @@
 
 /**
 * @typedef {Object} Resize
+* @property {String} label - Resize label
 * @property {Boolean} dragDrop - Enable drag and drop
 * @property {String} buttonId - Button ID
 * @property {String} modalId - Modal ID
@@ -770,7 +771,7 @@ class Grid {
     sortListView.innerHTML = '';
     
     DOM.create('li').class('list-group-item').appendTo(sortListView)
-      .addChild('div').class('w-100 d-flex justify-content-center')
+      .addChild('div').class('w-100 d-flex justify-content-center mb-1 fst-italic')
       .text(this.sort.label);
     
     this.columns.forEach(column => {
@@ -877,7 +878,7 @@ class Grid {
     const hideDD = document.getElementById(this.hide.id);
 
     DOM.create('li').class('list-group-item').appendTo(hideDD)
-      .addChild('div').class('w-100 d-flex justify-content-center')
+      .addChild('div').class('w-100 d-flex justify-content-center mb-1 fst-italic')
       .text(this.hide.label);
     
     this.columns.forEach(column => {
@@ -1108,6 +1109,11 @@ class Grid {
   /////////////////////////////////////////
   // Resize columns
   #addResize() {
+    if (this.resize.dragDrop) {
+      this.#addResizeDropdown();
+      return;
+    };
+
     const modal = document.getElementById(this.resize.modalBodyId);
     const ul = document.createElement('ul');
     modal.appendChild(ul);
@@ -1243,6 +1249,48 @@ class Grid {
           this.renderTable();
           this.#setResizeModal(ul);
         });
+  };
+
+  ////////////////
+  #addResizeDropdown() {
+    const ulObject = {};
+
+    const resizeDD = DOM()
+      .createSet('div', {
+        class: 'dropdown',
+        dataBsToggle: 'tooltip',
+        dataBsTitle: this.resize.label,
+        dataBsPlacement: 'top',
+      }).id(this.resize.buttonId)
+      .addChildSet('button', {
+        type: 'button',
+        class: 'btn btn-sm dropdown-toggle ms-1',
+        dataBsToggle: 'dropdown',
+        ariaExpanded: 'false',
+        ariaLabel: this.resize.label,
+      })
+      .html('<i class="bi bi-arrows"></i>')
+      .addAfter('ul').class('dropdown-menu').id('resizeDD').saveGlobal(ulObject)
+        .addChild('li').class('list-group-item')
+          .addChild('div').class('w-100 d-flex justify-content-center mb-1 fst-italic')
+          .text(this.resize.label)
+          .parent().parent()
+        .addChild('li').class('list-group-item')
+          .addChild('div').class('w-100 d-flex justify-content-center')
+            .addChildSet('button', {
+              type: 'button',
+              class: 'btn',
+              ariaLabel: 'Reset',
+              html: `<i class="bi bi-x-octagon"></i>`,
+            })
+            .event('click', () => {
+              this.#clearSizes();
+              this.renderTable();
+              this.#setResizeModal(ulObject.node);
+            })
+      .parent().parent().parent().parent().node;
+    
+    DOM(this.resize.buttonId).node.replaceWith(resizeDD);
   };
 
   ////////////////

@@ -1,6 +1,11 @@
 /*
 * Globals
 */
+.main-container {
+  display: flex;
+  --bs-gutter-x: 0 !important;
+}
+
 @media (max-width: 768px) {
   body {
     height: 100% !important;
@@ -21,6 +26,12 @@
     flex-grow: 1 !important;
   }
 }
+
+/*.main-row {
+  padding-right: calc(var(--bs-gutter-x) * 0.5);
+  padding-left: calc(var(--bs-gutter-x) * 0.5);
+  width: 100%;
+}*/
 
 main {
   flex: 1 0 0;

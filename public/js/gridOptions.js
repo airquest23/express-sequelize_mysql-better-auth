@@ -70,22 +70,23 @@ const gridOptions = {
     cancel: 'cancelSearch',
   },
   sort: {
-    label: "@(#sort)",
+    /*label: "@(#sort)",*/
   },
   hide: {
     id: 'hideDD',
     /*label: "@(#hide)",*/
-  },
-  resize: {
-    dragDrop: true,
-    buttonId: 'resizeButton',
-    modalId: 'resizeModal',
-    modalBodyId: 'resizeModalBody',
   },
   reorder: {
     dragDrop: true,
     buttonId: 'reorderButton',
     modalId: 'reorderModal',
     modalBodyId: 'reorderModalBody',
+  },
+  resize: {
+    /*label: "@(#resize)",*/
+    dragDrop: true,
+    buttonId: 'resizeButton',
+    modalId: 'resizeModal',
+    modalBodyId: 'resizeModalBody',
   },
 };
