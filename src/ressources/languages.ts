@@ -305,6 +305,10 @@ export const ressources: { [key: string]: string[] } = {
     'Supprimer toutes les données locales stockées',
     'Remove all local storage data'
   ],
+  userActionRemoveStorageGrid: [
+    'Supprimer les données locales des tableaux',
+    'Remove local storage grid data'
+  ],
   userTwoFaTitle: [
     'Authentification à deux facteurs',
     'Two factors authentication'

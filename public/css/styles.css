@@ -16,6 +16,16 @@ html, body {
   }
 }
 
+@media (max-width: 400px) {
+  .mobile-change-flex-direction {
+    flex-direction: column !important;
+  }
+
+  .mobile-reset-col-width {
+    width: auto !important;
+  }
+}
+
 @media (min-width: 768px) {
   .mobile-only {
     display: none !important;
